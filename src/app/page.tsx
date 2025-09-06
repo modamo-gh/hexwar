@@ -32,7 +32,7 @@ const Home = () => {
 
 	return (
 		<div
-			className="flex flex-col h-screen w-screen items-center justify-center"
+			className="flex flex-col h-screen w-screen items-center justify-center p-4"
 			style={{ backgroundColor: rgb }}
 		>
 			<div className="flex-1">
