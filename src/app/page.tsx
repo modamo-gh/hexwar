@@ -1,8 +1,9 @@
 "use client";
 
-import { Press_Start_2P } from "next/font/google";
-import { useEffect, useMemo, useState } from "react";
+import Header from "@/components/Header";
+import { formatPrice } from "@/lib/format";
 import { Filter } from "bad-words";
+import { useEffect, useMemo, useState } from "react";
 
 type Color = {
 	red: number;
@@ -59,13 +60,6 @@ const isValidName = (name: string) => {
 		!filter.isProfane(name)
 	);
 };
-
-const pressStart2P = Press_Start_2P({
-	subsets: ["latin"],
-	weight: "400",
-	display: "swap",
-	variable: "--font-press-start"
-});
 
 const Home = () => {
 	const [customName, setCustomName] = useState("");
@@ -150,33 +144,29 @@ const Home = () => {
 		setColor();
 	}, []);
 
-	const formatPrice = (cents: number) => {
-		return `${Math.floor(cents / 100)}.${Math.floor(cents % 100)
-			.toString()
-			.padStart(2, "0")}`;
-	};
-
 	const handleNameSelection = async (suggestion: string) => {
 		suggestion = convertToTitleCase(suggestion);
 
 		setIsAssigningName(true);
 
 		try {
-			const response = await fetch("/api/colors", {
+			const response = await fetch("/api/checkout", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
+					color,
 					hex,
 					name: suggestion,
 					price
 				})
 			});
+			const data = await response.json();
 
-			if (response.ok) {
-				setHasName(true);
-				setHasNameBeenSelected(true);
-				setMessage(`#${hex} is now named ${suggestion}!`);
-				setSuggestions([]);
+			if (response.ok && data.url) {
+				window.location.href = data.url;
+			} else {
+				console.error(data);
+				setMessage("Checkout error");
 			}
 		} catch (error) {
 		} finally {
@@ -190,24 +180,12 @@ const Home = () => {
 
 	return (
 		<div
-			className={`gap-2 grid grid-cols-2 grid-rows-5 h-screen w-screen p-4 ${pressStart2P.className}`}
+			className={`gap-2 grid grid-cols-2 grid-rows-5 h-screen w-screen p-4`}
 			style={{
 				backgroundColor: `#${hex}`
 			}}
 		>
-			<div
-				className="border flex col-span-2 items-center justify-center row-span-1 rounded"
-				style={{ borderColor: color }}
-			>
-				<h1
-					className="text-5xl tracking-widest"
-					style={{
-						color
-					}}
-				>
-					#HEXWAR
-				</h1>
-			</div>
+			<Header color={color} />
 			<div
 				className="border col-span-1 flex items-center justify-center row-span-4 rounded"
 				style={{ borderColor: color }}
