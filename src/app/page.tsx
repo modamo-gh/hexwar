@@ -23,6 +23,15 @@ const convertRGBToHex = (color: Color) => {
 		.toUpperCase()}`;
 };
 
+const convertToTitleCase = (name: string) => {
+	return name
+		.trim()
+		.split(/\s+/)
+		.filter(Boolean)
+		.map((word) => `${word[0].toUpperCase()}${word.slice(1).toLowerCase()}`)
+		.join(" ");
+};
+
 const filter = new Filter();
 
 const getLuminance = ({ red, green, blue }: Color) => {
@@ -135,13 +144,18 @@ const Home = () => {
 	}, []);
 
 	const handleNameSelection = async (suggestion: string) => {
+		suggestion = convertToTitleCase(suggestion);
+		
 		setIsAssigningName(true);
 
 		try {
 			const response = await fetch("/api/colors", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ hex, name: suggestion })
+				body: JSON.stringify({
+					hex,
+					name: suggestion
+				})
 			});
 
 			if (response.ok) {
@@ -214,7 +228,7 @@ const Home = () => {
 												className={`${
 													isRetrievingNames &&
 													"animate-pulse"
-												} h-12 rounded w-16`}
+												} flex-1 h-full rounded`}
 												key={index}
 												style={{
 													backgroundColor: color
@@ -244,6 +258,7 @@ const Home = () => {
 							<input
 								className="flex-1 h-full pl-2 rounded"
 								onChange={(e) => onNameChange(e.target.value)}
+								placeholder="Enter your custom color name"
 								style={{
 									backgroundColor: color,
 									color: `#${hex}`
@@ -256,7 +271,9 @@ const Home = () => {
 									isValidName(customName) &&
 									"cursor-pointer hover:opacity-75"
 								} h-full px-2 py-1 rounded`}
-								disabled={!isValidName(customName)}
+								disabled={
+									!isValidName(customName) || isAssigningName
+								}
 								onClick={() => handleNameSelection(customName)}
 								style={{
 									backgroundColor: color,
@@ -266,24 +283,27 @@ const Home = () => {
 								Submit
 							</button>
 						</div>
-						<div className="flex flex-col items-center">
+						<div
+							className="flex flex-col items-center text-center"
+							style={{ color }}
+						>
 							<p>RULES</p>
 							<p>
 								Cannot be more than three words{" "}
 								{isMoreThanThreeWords(customName) ? "❌" : "✅"}
 							</p>
-							<p className="text-center">
+							<p>
 								Only letters, apostrophes, spaces, and hyphens
 								allowed{" "}
 								{!validCharacters.test(customName)
 									? "❌"
 									: "✅"}
 							</p>
-							<p className="text-center">
+							<p>
 								No longer than 25 characters{" "}
 								{customName.length > 25 ? "❌" : "✅"}
 							</p>
-							<p className="text-center">
+							<p>
 								Keep it cute{" "}
 								{filter.isProfane(customName) ? "❌" : "✅"}
 							</p>
