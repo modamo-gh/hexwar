@@ -9,7 +9,7 @@ type Color = {
 	blue: number;
 };
 
-const convertColorObjectToHex = (color: Color) => {
+const convertRGBToHex = (color: Color) => {
 	return `${color.red
 		.toString(16)
 		.padStart(2, "0")
@@ -39,11 +39,13 @@ const pressStart2P = Press_Start_2P({
 });
 
 const Home = () => {
-	const [hexColor, setHexColor] = useState<Color>({
+	const [message, setMessage] = useState("");
+	const [rgb, setRGB] = useState<Color>({
 		red: 0,
 		green: 0,
 		blue: 0
 	});
+	const [suggestions, setSuggestions] = useState<string[]>([]);
 
 	useEffect(() => {
 		const setColor = async () => {
@@ -52,9 +54,22 @@ const Home = () => {
 			const blue = Math.floor(Math.random() * 256);
 			const color = { red, green, blue };
 
-			setHexColor(color);
+			setRGB(color);
 
-			await fetch(`/api/colors?hex=${convertColorObjectToHex(color)}`);
+			try {
+				const response = await fetch(`/api/names`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ hex: `#${convertRGBToHex(color)}` })
+				});
+
+				const data = await response.json();
+
+				setSuggestions(data.suggestions);
+			} catch (error) {
+				setMessage("AI error");
+				console.error(error);
+			}
 		};
 
 		setColor();
@@ -64,28 +79,45 @@ const Home = () => {
 		<div
 			className={`flex flex-col h-screen w-screen items-center justify-center p-4 ${pressStart2P.className}`}
 			style={{
-				backgroundColor: `#${convertColorObjectToHex(hexColor)}`
+				backgroundColor: `#${convertRGBToHex(rgb)}`
 			}}
 		>
 			<div className="flex flex-1 items-center">
 				<h1
 					className="text-5xl tracking-widest"
 					style={{
-						color: getBlackOrWhite(hexColor) < 2 ? "black" : "white"
+						color: getBlackOrWhite(rgb) < 2 ? "black" : "white"
 					}}
 				>
 					#HEXWAR
 				</h1>
 			</div>
-			<div className="flex flex-4 items-center">
+			<div className="flex flex-col flex-4 items-center justify-center">
 				<p
 					className="text-5xl"
 					style={{
-						color: getBlackOrWhite(hexColor) < 2 ? "black" : "white"
+						color: getBlackOrWhite(rgb) < 2 ? "black" : "white"
 					}}
 				>
-					#{convertColorObjectToHex(hexColor) ?? "000000"}
+					#{convertRGBToHex(rgb) ?? "000000"}
 				</p>
+				{suggestions.length && (
+					<p
+						className="text-2xl"
+						style={{
+							color: getBlackOrWhite(rgb) < 2 ? "black" : "white"
+						}}
+					>
+						{
+							"This color hasn't been named yet! Here are some suggestions:"
+						}
+					</p>
+				)}
+				<div className="flex items-center justify-around w-4/5">
+					{suggestions.map((suggestion, index) => (
+						<p key={index}>{suggestion}</p>
+					))}
+				</div>
 			</div>
 		</div>
 	);
