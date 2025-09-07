@@ -13,5 +13,29 @@ export async function GET(request: NextRequest) {
 		where: { hex: hex.toUpperCase() }
 	});
 
-	return Response.json(color ?? null);
+	if (!color) {
+		return NextResponse.json({ hex, name: null });
+	}
+
+	return NextResponse.json(color ?? null);
+}
+
+export async function POST(request: NextRequest) {
+	const {name} = await request.json();
+	const { searchParams } = new URL(request.url);
+	const hex = searchParams.get("hex");
+
+	await prisma.color.create({
+		data: {
+			hex: hex!.toUpperCase(),
+			name,
+			source: "user"
+		}
+	});
+
+	return NextResponse.json({
+		hex: hex!.toUpperCase(),
+		name,
+		source: "user"
+	});
 }
