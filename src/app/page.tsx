@@ -70,6 +70,7 @@ const pressStart2P = Press_Start_2P({
 const Home = () => {
 	const [customName, setCustomName] = useState("");
 	const [hasName, setHasName] = useState(false);
+	const [hasNameBeenSelected, setHasNameBeenSelected] = useState(false);
 	const [isAssigningName, setIsAssigningName] = useState(false);
 	const [isRetrievingNames, setIsRetrievingNames] = useState(false);
 	const [message, setMessage] = useState("");
@@ -145,7 +146,7 @@ const Home = () => {
 
 	const handleNameSelection = async (suggestion: string) => {
 		suggestion = convertToTitleCase(suggestion);
-		
+
 		setIsAssigningName(true);
 
 		try {
@@ -160,6 +161,7 @@ const Home = () => {
 
 			if (response.ok) {
 				setHasName(true);
+				setHasNameBeenSelected(true);
 				setMessage(`#${hex} is now named ${suggestion}!`);
 				setSuggestions([]);
 			}
@@ -253,7 +255,11 @@ const Home = () => {
 										</button>
 								  ))}
 						</div>
-						<p>- OR -</p>
+					</>
+				)}
+				{!hasNameBeenSelected && (
+					<>
+						<p style={{ color }}>- OR -</p>
 						<div className="flex gap-2 h-12 items-center justify-around w-full">
 							<input
 								className="flex-1 h-full pl-2 rounded"
