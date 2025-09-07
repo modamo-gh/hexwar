@@ -2,6 +2,7 @@
 
 import { Press_Start_2P } from "next/font/google";
 import { useEffect, useMemo, useState } from "react";
+import { Filter } from "bad-words";
 
 type Color = {
 	red: number;
@@ -22,10 +23,32 @@ const convertRGBToHex = (color: Color) => {
 		.toUpperCase()}`;
 };
 
+const filter = new Filter();
+
 const getLuminance = ({ red, green, blue }: Color) => {
 	const luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255;
 
 	return luminance > 0.5 ? "black" : "white";
+};
+
+const isMoreThanThreeWords = (input: string) => {
+	const words = input.trim().split(/\s+/).filter(Boolean);
+
+	return words.length > 3;
+};
+
+const validCharacters = /^[a-zA-Z '\-]+$/;
+
+const isValidName = (name: string) => {
+	name = name.trim();
+
+	return (
+		!!name.length &&
+		validCharacters.test(name) &&
+		!isMoreThanThreeWords(name) &&
+		name.length <= 25 &&
+		!filter.isProfane(name)
+	);
 };
 
 const pressStart2P = Press_Start_2P({
@@ -36,6 +59,7 @@ const pressStart2P = Press_Start_2P({
 });
 
 const Home = () => {
+	const [customName, setCustomName] = useState("");
 	const [hasName, setHasName] = useState(false);
 	const [isAssigningName, setIsAssigningName] = useState(false);
 	const [isRetrievingNames, setIsRetrievingNames] = useState(false);
@@ -131,6 +155,10 @@ const Home = () => {
 		}
 	};
 
+	const onNameChange = (input: string) => {
+		setCustomName(input);
+	};
+
 	return (
 		<div
 			className={`gap-2 grid grid-cols-2 grid-rows-5 h-screen w-screen p-4 ${pressStart2P.className}`}
@@ -165,7 +193,7 @@ const Home = () => {
 				</p>
 			</div>
 			<div
-				className="border col-span-1 flex flex-col gap-12 items-center justify-center p-2 row-span-4 rounded"
+				className="border col-span-1 flex flex-col items-center justify-around p-2 row-span-4 rounded"
 				style={{ borderColor: color }}
 			>
 				<p
@@ -177,39 +205,90 @@ const Home = () => {
 					{message}
 				</p>
 				{!hasName && (
-					<div className="flex gap-2 h-12 items-center justify-around w-full">
-						{!suggestions.length
-							? Array.from({ length: 3 }).map((_, index) => {
-									return (
-										<div
-											className={`${
-												isRetrievingNames &&
-												"animate-pulse"
-											} h-12 rounded w-16`}
+					<>
+						<div className="flex gap-2 h-12 w-full">
+							{!suggestions.length
+								? Array.from({ length: 3 }).map((_, index) => {
+										return (
+											<div
+												className={`${
+													isRetrievingNames &&
+													"animate-pulse"
+												} h-12 rounded w-16`}
+												key={index}
+												style={{
+													backgroundColor: color
+												}}
+											/>
+										);
+								  })
+								: suggestions.map((suggestion, index) => (
+										<button
+											className="cursor-pointer flex-1 h-full hover:opacity-75 rounded"
+											disabled={isAssigningName}
 											key={index}
+											onClick={() =>
+												handleNameSelection(suggestion)
+											}
 											style={{
-												backgroundColor: color
+												backgroundColor: color,
+												color: `#${hex}`
 											}}
-										/>
-									);
-							  })
-							: suggestions.map((suggestion, index) => (
-									<button
-										className="cursor-pointer flex-1 h-full hover:opacity-75 rounded"
-										disabled={isAssigningName}
-										key={index}
-										onClick={() =>
-											handleNameSelection(suggestion)
-										}
-										style={{
-											backgroundColor: color,
-											color: `#${hex}`
-										}}
-									>
-										{suggestion}
-									</button>
-							  ))}
-					</div>
+										>
+											{suggestion}
+										</button>
+								  ))}
+						</div>
+						<p>- OR -</p>
+						<div className="flex gap-2 h-12 items-center justify-around w-full">
+							<input
+								className="flex-1 h-full pl-2 rounded"
+								onChange={(e) => onNameChange(e.target.value)}
+								style={{
+									backgroundColor: color,
+									color: `#${hex}`
+								}}
+								type="text"
+								value={customName}
+							/>
+							<button
+								className={`${
+									isValidName(customName) &&
+									"cursor-pointer hover:opacity-75"
+								} h-full px-2 py-1 rounded`}
+								disabled={!isValidName(customName)}
+								onClick={() => handleNameSelection(customName)}
+								style={{
+									backgroundColor: color,
+									color: `#${hex}`
+								}}
+							>
+								Submit
+							</button>
+						</div>
+						<div className="flex flex-col items-center">
+							<p>RULES</p>
+							<p>
+								Cannot be more than three words{" "}
+								{isMoreThanThreeWords(customName) ? "❌" : "✅"}
+							</p>
+							<p className="text-center">
+								Only letters, apostrophes, spaces, and hyphens
+								allowed{" "}
+								{!validCharacters.test(customName)
+									? "❌"
+									: "✅"}
+							</p>
+							<p className="text-center">
+								No longer than 25 characters{" "}
+								{customName.length > 25 ? "❌" : "✅"}
+							</p>
+							<p className="text-center">
+								Keep it cute{" "}
+								{filter.isProfane(customName) ? "❌" : "✅"}
+							</p>
+						</div>
+					</>
 				)}
 			</div>
 		</div>
