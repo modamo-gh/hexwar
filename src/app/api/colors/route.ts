@@ -14,26 +14,31 @@ export async function GET(request: NextRequest) {
 	});
 
 	if (!color) {
-		return NextResponse.json({ hex, name: null });
+		return NextResponse.json({ hex, name: null, price: 0 });
 	}
 
 	return NextResponse.json(color ?? null);
 }
 
 export async function POST(request: NextRequest) {
-	const { hex, name } = await request.json();
+	const { hex, name, price } = await request.json();
 
-	if(!hex || !name){
-		return NextResponse.json({error: "Missing hex or name"}, {status: 400})
+	if (!hex || !name || price === undefined) {
+		return NextResponse.json(
+			{ error: "Missing hex, name, price" },
+			{ status: 400 }
+		);
 	}
 
-	await prisma.color.create({
-		data: {
+	await prisma.color.upsert({
+		create: {
 			hex,
 			name,
-			source: "user"
-		}
+			price
+		},
+		update: { name, price },
+		where: { hex }
 	});
 
-	return NextResponse.json({status: 200});
+	return NextResponse.json({ status: 200 });
 }

@@ -74,6 +74,9 @@ const Home = () => {
 	const [isAssigningName, setIsAssigningName] = useState(false);
 	const [isRetrievingNames, setIsRetrievingNames] = useState(false);
 	const [message, setMessage] = useState("");
+	const [minimumPrice, setMinimumPrice] = useState(0);
+	const [price, setPrice] = useState(0);
+	const [priceInput, setPriceInput] = useState("");
 	const [rgb, setRGB] = useState<Color>({
 		red: 0,
 		green: 0,
@@ -135,6 +138,9 @@ const Home = () => {
 				} else {
 					setMessage(`The name of this color is ${data.name}`);
 				}
+
+				setMinimumPrice(data.price);
+				setPrice(data.price);
 			} catch (error) {
 				setMessage("AI error");
 				console.error(error);
@@ -143,6 +149,12 @@ const Home = () => {
 
 		setColor();
 	}, []);
+
+	const formatPrice = (cents: number) => {
+		return `${Math.floor(cents / 100)}.${Math.floor(cents % 100)
+			.toString()
+			.padStart(2, "0")}`;
+	};
 
 	const handleNameSelection = async (suggestion: string) => {
 		suggestion = convertToTitleCase(suggestion);
@@ -155,7 +167,8 @@ const Home = () => {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					hex,
-					name: suggestion
+					name: suggestion,
+					price
 				})
 			});
 
@@ -260,25 +273,57 @@ const Home = () => {
 				{!hasNameBeenSelected && (
 					<>
 						<p style={{ color }}>- OR -</p>
-						<div className="flex gap-2 h-12 items-center justify-around w-full">
-							<input
-								className="flex-1 h-full pl-2 rounded"
-								onChange={(e) => onNameChange(e.target.value)}
-								placeholder="Enter your custom color name"
-								style={{
-									backgroundColor: color,
-									color: `#${hex}`
-								}}
-								type="text"
-								value={customName}
-							/>
+						<div className="flex gap-2 items-center justify-center w-full">
+							<div className="flex flex-col flex-1 gap-2 ">
+								<input
+									className="h-12 pl-2 rounded w-full"
+									onChange={(e) =>
+										onNameChange(e.target.value)
+									}
+									placeholder="Enter your custom color name"
+									style={{
+										backgroundColor: color,
+										color: `#${hex}`
+									}}
+									type="text"
+									value={customName}
+								/>
+								<input
+									className="h-12 pl-2 rounded w-full"
+									inputMode="decimal"
+									onChange={(e) => {
+										const v = e.target.value;
+
+										const cleaned = Number(
+											v.replace(/\D/g, "")
+										);
+
+										setPrice(cleaned);
+										setPriceInput(
+											cleaned ? formatPrice(cleaned) : ""
+										);
+									}}
+									placeholder={`Minimum price: $${formatPrice(
+										minimumPrice + 100
+									)}`}
+									style={{
+										backgroundColor: color,
+										color: `#${hex}`
+									}}
+									value={priceInput}
+								/>
+							</div>
 							<button
 								className={`${
 									isValidName(customName) &&
+									!isAssigningName &&
+									price >= minimumPrice + 100 &&
 									"cursor-pointer hover:opacity-75"
 								} h-full px-2 py-1 rounded`}
 								disabled={
-									!isValidName(customName) || isAssigningName
+									!isValidName(customName) ||
+									isAssigningName ||
+									price < minimumPrice + 100
 								}
 								onClick={() => handleNameSelection(customName)}
 								style={{
@@ -293,7 +338,7 @@ const Home = () => {
 							className="flex flex-col items-center text-center"
 							style={{ color }}
 						>
-							<p>RULES</p>
+							<p>CUSTOM NAME RULES</p>
 							<p>
 								Cannot be more than three words{" "}
 								{isMoreThanThreeWords(customName) ? "❌" : "✅"}
@@ -310,8 +355,12 @@ const Home = () => {
 								{customName.length > 25 ? "❌" : "✅"}
 							</p>
 							<p>
-								Keep it cute{" "}
+								Watch your profanity{" "}
 								{filter.isProfane(customName) ? "❌" : "✅"}
+							</p>
+							<p>
+								Must be at least $1 more than the last bid{" "}
+								{price >= minimumPrice + 100 ? "✅" : "❌"}
 							</p>
 						</div>
 					</>
