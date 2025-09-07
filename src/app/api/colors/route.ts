@@ -21,21 +21,19 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-	const {name} = await request.json();
-	const { searchParams } = new URL(request.url);
-	const hex = searchParams.get("hex");
+	const { hex, name } = await request.json();
+
+	if(!hex || !name){
+		return NextResponse.json({error: "Missing hex or name"}, {status: 400})
+	}
 
 	await prisma.color.create({
 		data: {
-			hex: hex!.toUpperCase(),
+			hex,
 			name,
 			source: "user"
 		}
 	});
 
-	return NextResponse.json({
-		hex: hex!.toUpperCase(),
-		name,
-		source: "user"
-	});
+	return NextResponse.json({status: 200});
 }

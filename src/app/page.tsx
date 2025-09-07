@@ -1,7 +1,7 @@
 "use client";
 
 import { Press_Start_2P } from "next/font/google";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Color = {
 	red: number;
@@ -28,21 +28,6 @@ const getLuminance = ({ red, green, blue }: Color) => {
 	return luminance > 0.5 ? "black" : "white";
 };
 
-const handleNameSelection = async (color: Color, suggestion: string) => {
-	try {
-		const response = await fetch(
-			`/api/colors?hex=${convertRGBToHex(color)}`,
-			{
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ name: suggestion })
-			}
-		);
-
-		console.log(response);
-	} catch (error) {}
-};
-
 const pressStart2P = Press_Start_2P({
 	subsets: ["latin"],
 	weight: "400",
@@ -51,6 +36,9 @@ const pressStart2P = Press_Start_2P({
 });
 
 const Home = () => {
+	const [hasName, setHasName] = useState(false);
+	const [isAssigningName, setIsAssigningName] = useState(false);
+	const [isRetrievingNames, setIsRetrievingNames] = useState(false);
 	const [message, setMessage] = useState("");
 	const [rgb, setRGB] = useState<Color>({
 		red: 0,
@@ -58,6 +46,13 @@ const Home = () => {
 		blue: 0
 	});
 	const [suggestions, setSuggestions] = useState<string[]>([]);
+
+	const hex = useMemo(() => {
+		return convertRGBToHex(rgb);
+	}, [rgb]);
+	const color = useMemo(() => {
+		return getLuminance(rgb);
+	}, [rgb]);
 
 	useEffect(() => {
 		const setColor = async () => {
@@ -68,27 +63,30 @@ const Home = () => {
 
 			setRGB(color);
 
+			const localHex = convertRGBToHex(color);
+
 			try {
-				const response = await fetch(
-					`/api/colors?hex=${convertRGBToHex(color)}`,
-					{
-						method: "GET"
-					}
-				);
+				const response = await fetch(`/api/colors?hex=${localHex}`, {
+					method: "GET"
+				});
 
 				const data = await response.json();
+
+				setHasName(!!data.name);
 
 				if (!data.name) {
 					setMessage(
 						"This color hasn't been named yet! Here are some suggestions:"
 					);
 
+					setIsRetrievingNames(true);
+
 					try {
 						const suggestionsResponse = await fetch("/api/names", {
 							method: "POST",
 							headers: { "Content-Type": "application/json" },
 							body: JSON.stringify({
-								hex: convertRGBToHex(color)
+								hex: localHex
 							})
 						});
 
@@ -96,7 +94,10 @@ const Home = () => {
 							await suggestionsResponse.json();
 
 						setSuggestions(suggestionsData.suggestions);
-					} catch (error) {}
+					} catch (error) {
+					} finally {
+						setIsRetrievingNames(false);
+					}
 				} else {
 					setMessage(`The name of this color is ${data.name}`);
 				}
@@ -109,57 +110,105 @@ const Home = () => {
 		setColor();
 	}, []);
 
+	const handleNameSelection = async (suggestion: string) => {
+		setIsAssigningName(true);
+
+		try {
+			const response = await fetch("/api/colors", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ hex, name: suggestion })
+			});
+
+			if (response.ok) {
+				setHasName(true);
+				setMessage(`#${hex} is now named ${suggestion}!`);
+				setSuggestions([]);
+			}
+		} catch (error) {
+		} finally {
+			setIsAssigningName(false);
+		}
+	};
+
 	return (
 		<div
-			className={`flex flex-col h-screen w-screen items-center justify-center p-4 ${pressStart2P.className}`}
+			className={`gap-2 grid grid-cols-2 grid-rows-5 h-screen w-screen p-4 ${pressStart2P.className}`}
 			style={{
-				backgroundColor: `#${convertRGBToHex(rgb)}`
+				backgroundColor: `#${hex}`
 			}}
 		>
-			<div className="flex flex-1 items-center">
+			<div
+				className="border flex col-span-2 items-center justify-center row-span-1 rounded"
+				style={{ borderColor: color }}
+			>
 				<h1
 					className="text-5xl tracking-widest"
 					style={{
-						color: getLuminance(rgb)
+						color
 					}}
 				>
 					#HEXWAR
 				</h1>
 			</div>
-			<div className="flex flex-col flex-4 items-center justify-around">
+			<div
+				className="border col-span-1 flex items-center justify-center row-span-4 rounded"
+				style={{ borderColor: color }}
+			>
 				<p
 					className="text-5xl"
 					style={{
-						color: getLuminance(rgb)
+						color
 					}}
 				>
-					#{convertRGBToHex(rgb) ?? "000000"}
+					#{hex ?? "000000"}
 				</p>
+			</div>
+			<div
+				className="border col-span-1 flex flex-col gap-12 items-center justify-center p-2 row-span-4 rounded"
+				style={{ borderColor: color }}
+			>
 				<p
 					className="text-center text-2xl w-4/5"
 					style={{
-						color: getLuminance(rgb)
+						color
 					}}
 				>
 					{message}
 				</p>
-				{suggestions.length > 0 && (
-					<div className="flex items-center justify-around w-4/5">
-						{suggestions.map((suggestion, index) => (
-							<button
-								className="cursor-pointer hover:opacity-75 px-4 py-2 rounded"
-								key={index}
-								onClick={() =>
-									handleNameSelection(rgb, suggestion)
-								}
-								style={{
-									backgroundColor: getLuminance(rgb),
-									color: `#${convertRGBToHex(rgb)}`
-								}}
-							>
-								{suggestion}
-							</button>
-						))}
+				{!hasName && (
+					<div className="flex gap-2 h-12 items-center justify-around w-full">
+						{!suggestions.length
+							? Array.from({ length: 3 }).map((_, index) => {
+									return (
+										<div
+											className={`${
+												isRetrievingNames &&
+												"animate-pulse"
+											} h-12 rounded w-16`}
+											key={index}
+											style={{
+												backgroundColor: color
+											}}
+										/>
+									);
+							  })
+							: suggestions.map((suggestion, index) => (
+									<button
+										className="cursor-pointer flex-1 h-full hover:opacity-75 rounded"
+										disabled={isAssigningName}
+										key={index}
+										onClick={() =>
+											handleNameSelection(suggestion)
+										}
+										style={{
+											backgroundColor: color,
+											color: `#${hex}`
+										}}
+									>
+										{suggestion}
+									</button>
+							  ))}
 					</div>
 				)}
 			</div>
