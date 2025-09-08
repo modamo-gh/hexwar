@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Press_Start_2P } from "next/font/google";
 import "./globals.css";
 
@@ -11,6 +11,12 @@ export const metadata: Metadata = {
 	},
 	manifest: "/site.webmanifest",
 	title: "#HEXWAR"
+};
+
+export const viewport: Viewport = {
+	initialScale: 1,
+	maximumScale: 1,
+	width: "device-width"
 };
 
 const pressStart2P = Press_Start_2P({
