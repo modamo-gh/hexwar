@@ -149,7 +149,8 @@ const Home = () => {
 		};
 
 		setColor();
-	});
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	useEffect(() => {
 		setMessage(
