@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export async function GET(request: NextRequest) {
 	const { searchParams } = new URL(request.url);
 	const hex = searchParams.get("hex");

@@ -1,6 +1,9 @@
 import { deepseek } from "@/lib/ai";
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export async function POST(request: NextRequest) {
 	try {
 		const { hex } = await request.json();
