@@ -20,8 +20,12 @@ export async function POST(request: NextRequest) {
 
 	try {
 		event = stripe.webhooks.constructEvent(payload, signature, secret);
-	} catch (error: any) {
-		console.error("Missing signature/secret", error.message);
+	} catch (error: unknown) {
+		if (error instanceof Error) {
+			console.error("Missing signature/secret", error.message);
+		} else {
+			console.error("Unknown error", error);
+		}
 
 		return new NextResponse("Invalid signature", { status: 400 });
 	}
@@ -51,8 +55,8 @@ export async function POST(request: NextRequest) {
 			}
 		}
 	} catch (error) {
-        console.error("Webhook handler error", error);
+		console.error("Webhook handler error", error);
 
-        return new NextResponse("Webhook error", { status: 200 });
-    }
+		return new NextResponse("Webhook error", { status: 200 });
+	}
 }

@@ -65,7 +65,7 @@ const isValidName = (name: string) => {
 const Home = () => {
 	const [customName, setCustomName] = useState("");
 	const [hasName, setHasName] = useState(false);
-	const [hasNameBeenSelected, setHasNameBeenSelected] = useState(false);
+	const [hasNameBeenSelected] = useState(false);
 	const [isAssigningName, setIsAssigningName] = useState(false);
 	const [isRetrievingNames, setIsRetrievingNames] = useState(false);
 	const [message, setMessage] = useState("");
@@ -132,7 +132,7 @@ const Home = () => {
 							await suggestionsResponse.json();
 
 						setSuggestions(suggestionsData.suggestions);
-					} catch (error) {
+					} catch {
 					} finally {
 						setIsRetrievingNames(false);
 					}
@@ -149,7 +149,7 @@ const Home = () => {
 		};
 
 		setColor();
-	}, []);
+	});
 
 	useEffect(() => {
 		setMessage(
@@ -183,7 +183,7 @@ const Home = () => {
 				console.error(data);
 				setMessage("Checkout error");
 			}
-		} catch (error) {
+		} catch {
 		} finally {
 			setIsAssigningName(false);
 		}
