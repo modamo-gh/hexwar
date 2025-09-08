@@ -5,16 +5,29 @@ import Link from "next/link";
 const SuccessPage = async ({
 	searchParams
 }: {
-	searchParams: { session_id: string };
+	searchParams: {
+		color?: string;
+		hex?: string;
+		name?: string;
+		session_id?: string;
+	};
 }) => {
-	const sessionID = (await searchParams).session_id;
-	const session = await stripe.checkout.sessions.retrieve(sessionID, {
-		expand: ["line_items.data.price.product"]
-	});
+	let color = searchParams.color ?? "";
+	let hex = searchParams.hex ?? "";
+	let name = searchParams.name ?? "";
 
-	const color = session.metadata?.color ?? "";
-	const hex = session.metadata?.hex ?? "";
-	const name = session.metadata?.name ?? "";
+	if (searchParams.session_id) {
+		const session = await stripe.checkout.sessions.retrieve(
+			searchParams.session_id,
+			{
+				expand: ["line_items.data.price.product"]
+			}
+		);
+
+		hex = session.metadata?.hex ?? "";
+		color = session.metadata?.color ?? "";
+		name = session.metadata?.name ?? "";
+	}
 
 	return (
 		<div

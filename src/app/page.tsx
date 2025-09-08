@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import useWindowWidth from "@/hooks/useWindowWidth";
 import { formatPrice } from "@/lib/format";
 import { Filter } from "bad-words";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 type Color = {
@@ -190,13 +191,43 @@ const Home = () => {
 		}
 	};
 
+	const router = useRouter();
+
+	const handleSubmissionSelection = async (suggestion: string) => {
+		suggestion = convertToTitleCase(suggestion);
+
+		setIsAssigningName(true);
+
+		try {
+			const response = await fetch("/api/colors", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					hex,
+					name: suggestion,
+					price: 0
+				})
+			});
+			if (response.ok) {
+				router.push(
+					`/success?color=${color}&hex=${hex}&name=${encodeURIComponent(
+						suggestion
+					)}`
+				);
+			}
+		} catch {
+		} finally {
+			setIsAssigningName(false);
+		}
+	};
+
 	const onNameChange = (input: string) => {
 		setCustomName(input);
 	};
 
 	return (
 		<div
-			className={`gap-2 grid grid-cols-2 grid-rows-5 h-screen w-screen p-4`}
+			className={`gap-2 grid grid-cols-2 grid-rows-5 min-h-dvh w-screen p-4`}
 			style={{
 				backgroundColor: `#${hex}`
 			}}
@@ -249,11 +280,13 @@ const Home = () => {
 								<div className="gap-2 grid grid-cols-3 w-full">
 									{suggestions.map((suggestion, index) => (
 										<button
-											className="cursor-pointer col-span-1 h-full min-h-12 hover:opacity-75 rounded-lg text-sm"
+											className="cursor-pointer col-span-1 h-full min-h-12 hover:opacity-75 rounded-lg text-xs"
 											disabled={isAssigningName}
 											key={index}
 											onClick={() =>
-												handleNameSelection(suggestion)
+												handleSubmissionSelection(
+													suggestion
+												)
 											}
 											style={{
 												backgroundColor: color,
@@ -275,7 +308,7 @@ const Home = () => {
 							<div className="flex flex-col flex-1 gap-2 ">
 								<input
 									aria-label="Custom color name"
-									className="min-h-12 pl-2 rounded-lg w-full"
+									className="min-h-12 pl-2 rounded-lg text-xs sm:text-base w-full"
 									onChange={(e) =>
 										onNameChange(e.target.value)
 									}
@@ -289,7 +322,7 @@ const Home = () => {
 								/>
 								<input
 									aria-label="Your bid in dollars"
-									className="min-h-12 pl-2 rounded-lg w-full"
+									className="min-h-12 pl-2 rounded-lg text-xs sm:text-base w-full"
 									inputMode="decimal"
 									onChange={(e) => {
 										const v = e.target.value;
@@ -343,7 +376,7 @@ const Home = () => {
 							<ul className="gap-2 grid grid-cols-5 pl-4">
 								<li className="contents">
 									<span className="col-span-4 text-left">
-										Cannot be more than three words
+										Max three words
 									</span>
 									<span>
 										{isMoreThanThreeWords(customName)
@@ -353,8 +386,8 @@ const Home = () => {
 								</li>
 								<li className="contents">
 									<span className="col-span-4 text-left">
-										Only letters, apostrophes, spaces, and
-										hyphens allowed
+										Letters, apostrophes, spaces, and
+										hyphens only
 									</span>
 									<span>
 										{!validCharacters.test(customName)
@@ -364,7 +397,7 @@ const Home = () => {
 								</li>
 								<li className="contents">
 									<span className="col-span-4 text-left">
-										No longer than 25 characters
+										Max 25 characters
 									</span>
 									<span>
 										{customName.length > 25 ? "❌" : "✅"}
@@ -382,8 +415,7 @@ const Home = () => {
 								</li>
 								<li className="contents">
 									<span className="col-span-4 text-left">
-										Must be at least $1 more than the last
-										bid
+										Bid at least the minimum price
 									</span>
 									<span>
 										{price >= minimumPrice + 100
