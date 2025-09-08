@@ -35,7 +35,7 @@ const Header = ({ color }: { color: string }) => {
 			</div>
 			<div className="flex flex-1 items-center justify-center text-center">
 				<Link href="/">
-					<h1 className="text-5xl tracking-widest">#HEXWAR</h1>
+					<h1 className="text-4xl sm:text-5xl tracking-widest">#HEXWAR</h1>
 				</Link>
 			</div>
 			<div className="md:flex flex-col flex-1 hidden items-center justify-center text-center">

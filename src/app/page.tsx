@@ -336,7 +336,7 @@ const Home = () => {
 											cleaned ? formatPrice(cleaned) : ""
 										);
 									}}
-									placeholder={`Minimum price: $${formatPrice(
+									placeholder={`Min price: $${formatPrice(
 										minimumPrice + 100
 									)}`}
 									style={{
