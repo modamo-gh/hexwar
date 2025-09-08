@@ -1,6 +1,7 @@
 "use client";
 
 import Header from "@/components/Header";
+import useWindowWidth from "@/hooks/useWindowWidth";
 import { formatPrice } from "@/lib/format";
 import { Filter } from "bad-words";
 import { useEffect, useMemo, useState } from "react";
@@ -85,6 +86,8 @@ const Home = () => {
 		return getLuminance(rgb);
 	}, [rgb]);
 
+	const width = useWindowWidth();
+
 	useEffect(() => {
 		const setColor = async () => {
 			const red = Math.floor(Math.random() * 256);
@@ -107,7 +110,9 @@ const Home = () => {
 
 				if (!data.name) {
 					setMessage(
-						"This color hasn't been named yet! Here are some suggestions:"
+						`${
+							width >= 1024 ? "This color" : `#${localHex}`
+						} hasn't been named yet! Here are some suggestions:`
 					);
 
 					setIsRetrievingNames(true);
@@ -115,7 +120,9 @@ const Home = () => {
 					try {
 						const suggestionsResponse = await fetch("/api/names", {
 							method: "POST",
-							headers: { "Content-Type": "application/json" },
+							headers: {
+								"Content-Type": "application/json"
+							},
 							body: JSON.stringify({
 								hex: localHex
 							})
@@ -143,6 +150,14 @@ const Home = () => {
 
 		setColor();
 	}, []);
+
+	useEffect(() => {
+		setMessage(
+			`${
+				width >= 1024 ? "This color" : `#${hex}`
+			} hasn't been named yet! Here are some suggestions:`
+		);
+	}, [hex, width]);
 
 	const handleNameSelection = async (suggestion: string) => {
 		suggestion = convertToTitleCase(suggestion);
@@ -187,7 +202,7 @@ const Home = () => {
 		>
 			<Header color={color} />
 			<div
-				className="border col-span-1 flex items-center justify-center row-span-4 rounded"
+				className="border col-span-1 hidden lg:flex items-center justify-center row-span-4 rounded-lg"
 				style={{ borderColor: color }}
 			>
 				<p
@@ -200,11 +215,11 @@ const Home = () => {
 				</p>
 			</div>
 			<div
-				className="border col-span-1 flex flex-col items-center justify-around p-2 row-span-4 rounded"
+				className="border col-span-2 lg:col-span-1 flex flex-col items-center justify-around p-2 row-span-4 rounded-lg"
 				style={{ borderColor: color }}
 			>
 				<p
-					className="text-center text-2xl w-4/5"
+					className="text-center text-xl w-4/5"
 					style={{
 						color
 					}}
@@ -214,24 +229,26 @@ const Home = () => {
 				{!hasName && (
 					<>
 						<div className="flex gap-2 h-12 w-full">
-							{!suggestions.length
-								? Array.from({ length: 3 }).map((_, index) => {
-										return (
-											<div
-												className={`${
-													isRetrievingNames &&
-													"animate-pulse"
-												} flex-1 h-full rounded`}
-												key={index}
-												style={{
-													backgroundColor: color
-												}}
-											/>
-										);
-								  })
-								: suggestions.map((suggestion, index) => (
+							{!suggestions.length ? (
+								Array.from({ length: 3 }).map((_, index) => {
+									return (
+										<div
+											className={`${
+												isRetrievingNames &&
+												"animate-pulse"
+											} flex-1 h-full rounded-lg`}
+											key={index}
+											style={{
+												backgroundColor: color
+											}}
+										/>
+									);
+								})
+							) : (
+								<div className="gap-2 grid grid-cols-3 w-full">
+									{suggestions.map((suggestion, index) => (
 										<button
-											className="cursor-pointer flex-1 h-full hover:opacity-75 rounded"
+											className="cursor-pointer col-span-1 h-full min-h-12 hover:opacity-75 rounded-lg text-sm"
 											disabled={isAssigningName}
 											key={index}
 											onClick={() =>
@@ -244,7 +261,9 @@ const Home = () => {
 										>
 											{suggestion}
 										</button>
-								  ))}
+									))}
+								</div>
+							)}
 						</div>
 					</>
 				)}
@@ -254,11 +273,12 @@ const Home = () => {
 						<div className="flex gap-2 items-center justify-center w-full">
 							<div className="flex flex-col flex-1 gap-2 ">
 								<input
-									className="h-12 pl-2 rounded w-full"
+									aria-label="Custom color name"
+									className="min-h-12 pl-2 rounded-lg w-full"
 									onChange={(e) =>
 										onNameChange(e.target.value)
 									}
-									placeholder="Enter your custom color name"
+									placeholder="Enter color name"
 									style={{
 										backgroundColor: color,
 										color: `#${hex}`
@@ -267,7 +287,8 @@ const Home = () => {
 									value={customName}
 								/>
 								<input
-									className="h-12 pl-2 rounded w-full"
+									aria-label="Your bid in dollars"
+									className="min-h-12 pl-2 rounded-lg w-full"
 									inputMode="decimal"
 									onChange={(e) => {
 										const v = e.target.value;
@@ -292,12 +313,13 @@ const Home = () => {
 								/>
 							</div>
 							<button
+								aria-label="Submit your color name and bid"
 								className={`${
 									isValidName(customName) &&
 									!isAssigningName &&
 									price >= minimumPrice + 100 &&
 									"cursor-pointer hover:opacity-75"
-								} h-full px-2 py-1 rounded`}
+								} h-full min-h-12 px-2 py-1 rounded-lg`}
 								disabled={
 									!isValidName(customName) ||
 									isAssigningName ||
@@ -317,29 +339,58 @@ const Home = () => {
 							style={{ color }}
 						>
 							<p>CUSTOM NAME RULES</p>
-							<p>
-								Cannot be more than three words{" "}
-								{isMoreThanThreeWords(customName) ? "❌" : "✅"}
-							</p>
-							<p>
-								Only letters, apostrophes, spaces, and hyphens
-								allowed{" "}
-								{!validCharacters.test(customName)
-									? "❌"
-									: "✅"}
-							</p>
-							<p>
-								No longer than 25 characters{" "}
-								{customName.length > 25 ? "❌" : "✅"}
-							</p>
-							<p>
-								Watch your profanity{" "}
-								{filter.isProfane(customName) ? "❌" : "✅"}
-							</p>
-							<p>
-								Must be at least $1 more than the last bid{" "}
-								{price >= minimumPrice + 100 ? "✅" : "❌"}
-							</p>
+							<ul className="gap-2 grid grid-cols-5 pl-4">
+								<li className="contents">
+									<span className="col-span-4 text-left">
+										Cannot be more than three words
+									</span>
+									<span>
+										{isMoreThanThreeWords(customName)
+											? "❌"
+											: "✅"}
+									</span>
+								</li>
+								<li className="contents">
+									<span className="col-span-4 text-left">
+										Only letters, apostrophes, spaces, and
+										hyphens allowed
+									</span>
+									<span>
+										{!validCharacters.test(customName)
+											? "❌"
+											: "✅"}
+									</span>
+								</li>
+								<li className="contents">
+									<span className="col-span-4 text-left">
+										No longer than 25 characters
+									</span>
+									<span>
+										{customName.length > 25 ? "❌" : "✅"}
+									</span>
+								</li>
+								<li className="contents">
+									<span className="col-span-4 text-left">
+										Watch your profanity
+									</span>
+									<span>
+										{filter.isProfane(customName)
+											? "❌"
+											: "✅"}
+									</span>
+								</li>
+								<li className="contents">
+									<span className="col-span-4 text-left">
+										Must be at least $1 more than the last
+										bid
+									</span>
+									<span>
+										{price >= minimumPrice + 100
+											? "✅"
+											: "❌"}
+									</span>
+								</li>
+							</ul>
 						</div>
 					</>
 				)}

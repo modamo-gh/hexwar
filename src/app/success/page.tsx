@@ -25,12 +25,11 @@ const SuccessPage = async ({
 		>
 			<Header color={color} />
 			<div
-				className="border flex flex-col flex-4 gap-4 items-center justify-center rounded text-2xl"
+				className="border flex flex-col flex-4 gap-4 items-center justify-center p-4 rounded-lg text-center text-2xl"
 				style={{ borderColor: color, color }}
 			>
-				<p>
-					#{hex} is now {name}!
-				</p>
+				<p>#{hex} is now</p>
+				<p>{name}!</p>
 				<p>
 					Click #HEXWAR above or{" "}
 					<Link

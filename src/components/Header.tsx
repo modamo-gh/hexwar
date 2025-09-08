@@ -25,26 +25,26 @@ const Header = ({ color }: { color: string }) => {
 	}, []);
 
 	return (
-		<div
-			className="border flex flex-1 col-span-2 items-center justify-center row-span-1 rounded"
+		<header
+			className="border col-span-2 flex flex-1 gap-2 items-center justify-between p-2 row-span-1 rounded-lg"
 			style={{ borderColor: color, color }}
 		>
-			<div className="flex flex-col flex-1 items-center justify-center">
-				<p>{count} of 16777216</p>
-				<p> colors named</p>
+			<div className="md:flex flex-col flex-1 hidden items-center justify-center text-center">
+				<p className="opacity-80 text-sm">{count} of 16777216</p>
+				<p className="opacity-80 text-sm">colors named</p>
 			</div>
-			<div className="flex-1">
+			<div className="flex flex-1 items-center justify-center text-center">
 				<Link href="/">
 					<h1 className="text-5xl tracking-widest">#HEXWAR</h1>
 				</Link>
 			</div>
-			<div className="flex flex-col flex-1 items-center justify-center">
-				<p>Most Valuable Color</p>
-				<p>{highest?.name}</p>
-				<p>#{highest?.hex}</p>
-				<p>${formatPrice(highest?.price ?? 0)}</p>
+			<div className="md:flex flex-col flex-1 hidden items-center justify-center text-center">
+				<p className="opacity-80 text-sm">Most Valuable Color</p>
+				<p className="opacity-80 text-sm">{highest?.name}</p>
+				<p className="opacity-80 text-sm">#{highest?.hex ?? "000000"}</p>
+				<p className="opacity-80 text-sm">${formatPrice(highest?.price ?? 0)}</p>
 			</div>
-		</div>
+		</header>
 	);
 };
 
