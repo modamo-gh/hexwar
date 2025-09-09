@@ -5,12 +5,22 @@ import useWindowWidth from "@/hooks/useWindowWidth";
 import { formatPrice } from "@/lib/format";
 import { Filter } from "bad-words";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type Color = {
 	red: number;
 	green: number;
 	blue: number;
+};
+
+const convertHexToRGB = (hex: string) => {
+	const color: Color = { red: 0, green: 0, blue: 0 };
+
+	color.red = Number(`0x${hex.slice(0, 2)}`);
+	color.green = Number(`0x${hex.slice(2, 4)}`);
+	color.blue = Number(`0x${hex.slice(4, 6)}`);
+
+	return color;
 };
 
 const convertRGBToHex = (color: Color) => {
@@ -64,9 +74,14 @@ const isValidName = (name: string) => {
 };
 
 const Home = () => {
+	const hexInputs = useRef<HTMLInputElement[]>(Array.from({ length: 6 }));
+
 	const [customName, setCustomName] = useState("");
 	const [hasName, setHasName] = useState(false);
-	const [hasNameBeenSelected] = useState(false);
+	const [hasNameBeenSelected, setHasNameBeenSelected] = useState(false);
+	const [hexDigits, setHexDigits] = useState<string[]>(
+		Array.from<string>({ length: 6 }).fill("")
+	);
 	const [isAssigningName, setIsAssigningName] = useState(false);
 	const [isRetrievingNames, setIsRetrievingNames] = useState(false);
 	const [message, setMessage] = useState("");
@@ -89,8 +104,10 @@ const Home = () => {
 
 	const width = useWindowWidth();
 
-	useEffect(() => {
-		const setColor = async () => {
+	const setColor = async (c?: string) => {
+		let localHex;
+
+		if (!c) {
 			const red = Math.floor(Math.random() * 256);
 			const green = Math.floor(Math.random() * 256);
 			const blue = Math.floor(Math.random() * 256);
@@ -98,57 +115,66 @@ const Home = () => {
 
 			setRGB(color);
 
-			const localHex = convertRGBToHex(color);
+			localHex = convertRGBToHex(color);
+		} else {
+			localHex = c;
 
-			try {
-				const response = await fetch(`/api/colors?hex=${localHex}`, {
-					method: "GET"
-				});
+			setRGB(convertHexToRGB(c));
+		}
 
-				const data = await response.json();
+		setHasName(false);
+		setSuggestions([]);
+		setMessage("");
 
-				setHasName(!!data.name);
+		try {
+			const response = await fetch(`/api/colors?hex=${localHex}`, {
+				method: "GET"
+			});
 
-				if (!data.name) {
-					setMessage(
-						`${
-							width >= 1024 ? "This color" : `#${localHex}`
-						} hasn't been named yet! Here are some suggestions:`
-					);
+			const data = await response.json();
 
-					setIsRetrievingNames(true);
+			setHasName(!!data.name);
 
-					try {
-						const suggestionsResponse = await fetch("/api/names", {
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json"
-							},
-							body: JSON.stringify({
-								hex: localHex
-							})
-						});
+			if (!data.name) {
+				setMessage(
+					`${
+						width >= 1024 ? "This color" : `#${localHex}`
+					} hasn't been named yet! Here are some suggestions:`
+				);
 
-						const suggestionsData =
-							await suggestionsResponse.json();
+				setIsRetrievingNames(true);
 
-						setSuggestions(suggestionsData.suggestions);
-					} catch {
-					} finally {
-						setIsRetrievingNames(false);
-					}
-				} else {
-					setMessage(`The name of this color is ${data.name}`);
+				try {
+					const suggestionsResponse = await fetch("/api/names", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify({
+							hex: localHex
+						})
+					});
+
+					const suggestionsData = await suggestionsResponse.json();
+
+					setSuggestions(suggestionsData.suggestions);
+				} catch {
+				} finally {
+					setIsRetrievingNames(false);
 				}
-
-				setMinimumPrice(data.price);
-				setPrice(data.price);
-			} catch (error) {
-				setMessage("AI error");
-				console.error(error);
+			} else {
+				setMessage(`The name of this color is ${data.name}`);
 			}
-		};
 
+			setMinimumPrice(data.price);
+			setPrice(data.price);
+		} catch (error) {
+			setMessage("AI error");
+			console.error(error);
+		}
+	};
+
+	useEffect(() => {
 		setColor();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
@@ -160,6 +186,43 @@ const Home = () => {
 			} hasn't been named yet! Here are some suggestions:`
 		);
 	}, [hex, width]);
+
+	const handleColorSearch = async (c: string) => {
+		setColor(c);
+	};
+
+	const handleHexInput = (digit: string, index: number) => {
+		if (/[a-fA-F0-9]/.test(digit)) {
+			const hd = [...hexDigits];
+
+			hd[index] = digit.toUpperCase();
+
+			setHexDigits(hd);
+
+			if (index < 5) {
+				hexInputs.current[index + 1]?.focus();
+			}
+		} else if (!/[a-fA-F0-9]/.test(digit) && index < 5) {
+			hexInputs.current[index].value = "";
+		}
+	};
+
+	const handleKeyNavigation = (e: KeyboardEvent, index: number) => {
+		if (e.key === "Backspace") {
+			e.preventDefault();
+
+			const hd = [...hexDigits];
+
+			hd[index] = "";
+
+			setHexDigits(hd);
+
+			if (index > 0) {
+				hexInputs.current[index].value = "";
+				hexInputs.current[index - 1].focus();
+			}
+		}
+	};
 
 	const handleNameSelection = async (suggestion: string) => {
 		suggestion = convertToTitleCase(suggestion);
@@ -191,6 +254,20 @@ const Home = () => {
 		}
 	};
 
+	const handlePaste = (e: ClipboardEvent) => {
+		const paste = e.clipboardData
+			?.getData("text")
+			.trim()
+			.replace("#", "")
+			.toUpperCase();
+
+		if (paste && /^[a-fA-F0-9]{6}$/.test(paste)) {
+			setHexDigits(paste?.split(""));
+
+			hexInputs.current[5].focus();
+		}
+	};
+
 	const router = useRouter();
 
 	const handleSubmissionSelection = async (suggestion: string) => {
@@ -208,6 +285,7 @@ const Home = () => {
 					price: 0
 				})
 			});
+
 			if (response.ok) {
 				router.push(
 					`/success?color=${color}&hex=${hex}&name=${encodeURIComponent(
@@ -234,17 +312,65 @@ const Home = () => {
 		>
 			<Header color={color} />
 			<div
-				className="border col-span-1 hidden lg:flex items-center justify-center row-span-4 rounded-lg"
+				className="border col-span-1 hidden lg:flex flex-col gap-2 items-center justify-center p-2 row-span-4 rounded-lg"
 				style={{ borderColor: color }}
 			>
-				<p
-					className="text-5xl"
-					style={{
-						color
-					}}
-				>
-					#{hex ?? "000000"}
-				</p>
+				<div className="flex flex-1 gap-2 w-full">
+					<div
+						className="flex flex-1 items-center justify-center text-2xl"
+						style={{ color }}
+					>
+						#
+					</div>
+					{hexDigits.map((digit, index) => (
+						<input
+							className="aspect-square flex-1 min-h-12 min-w-12 rounded-lg text-center uppercase"
+							key={index}
+							maxLength={1}
+							pattern="[0-9a-fA-F]"
+							onChange={(e) =>
+								handleHexInput(e.target.value, index)
+							}
+							onKeyDown={(e) => handleKeyNavigation(e, index)}
+							onPaste={(e) => handlePaste(e)}
+							ref={(element) => {
+								if (element) {
+									hexInputs.current[index] = element;
+								}
+							}}
+							style={{
+								backgroundColor: color,
+								color: `#${hex}`
+							}}
+							value={digit}
+						/>
+					))}
+					<button
+						aria-label="Search for a specific color"
+						className={`${
+							hexDigits.every((digit) => digit.length) &&
+							"cursor-pointer hover:opacity-80"
+						} flex-2 h-full min-h-12 px-2 py-1 rounded-lg`}
+						disabled={hexDigits.some((digit) => !digit.length)}
+						onClick={() => handleColorSearch(hexDigits.join(""))}
+						style={{
+							backgroundColor: color,
+							color: `#${hex}`
+						}}
+					>
+						Search
+					</button>
+				</div>
+				<div className="flex flex-4 items-center justify-center w-full">
+					<p
+						className="text-5xl"
+						style={{
+							color
+						}}
+					>
+						#{hex ?? "000000"}
+					</p>
+				</div>
 			</div>
 			<div
 				className="border col-span-2 lg:col-span-1 flex flex-col items-center justify-around p-2 row-span-4 rounded-lg"
@@ -280,7 +406,7 @@ const Home = () => {
 								<div className="gap-2 grid grid-cols-3 w-full">
 									{suggestions.map((suggestion, index) => (
 										<button
-											className="cursor-pointer col-span-1 h-full min-h-12 hover:opacity-75 rounded-lg text-xs"
+											className="cursor-pointer col-span-1 h-full min-h-12 hover:opacity-80 rounded-lg text-xs"
 											disabled={isAssigningName}
 											key={index}
 											onClick={() =>
@@ -352,7 +478,7 @@ const Home = () => {
 									isValidName(customName) &&
 									!isAssigningName &&
 									price >= minimumPrice + 100 &&
-									"cursor-pointer hover:opacity-75"
+									"cursor-pointer hover:opacity-80"
 								} h-full min-h-12 px-2 py-1 rounded-lg`}
 								disabled={
 									!isValidName(customName) ||
