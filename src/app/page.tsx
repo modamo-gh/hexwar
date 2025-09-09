@@ -78,7 +78,7 @@ const Home = () => {
 
 	const [customName, setCustomName] = useState("");
 	const [hasName, setHasName] = useState(false);
-	const [hasNameBeenSelected, setHasNameBeenSelected] = useState(false);
+	const [hasNameBeenSelected] = useState(false);
 	const [hexDigits, setHexDigits] = useState<string[]>(
 		Array.from<string>({ length: 6 }).fill("")
 	);
@@ -207,7 +207,10 @@ const Home = () => {
 		}
 	};
 
-	const handleKeyNavigation = (e: KeyboardEvent, index: number) => {
+	const handleKeyNavigation = (
+		e: React.KeyboardEvent<HTMLInputElement>,
+		index: number
+	) => {
 		if (e.key === "Backspace") {
 			e.preventDefault();
 
@@ -254,7 +257,7 @@ const Home = () => {
 		}
 	};
 
-	const handlePaste = (e: ClipboardEvent) => {
+	const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
 		const paste = e.clipboardData
 			?.getData("text")
 			.trim()
