@@ -4,25 +4,6 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export async function GET(request: NextRequest) {
-	const { searchParams } = new URL(request.url);
-	const hex = searchParams.get("hex");
-
-	if (!hex) {
-		return NextResponse.json({});
-	}
-
-	const color = await prisma.color.findUnique({
-		where: { hex: hex.toUpperCase() }
-	});
-
-	if (!color) {
-		return NextResponse.json({ hex, name: null, price: 0 });
-	}
-
-	return NextResponse.json(color ?? null);
-}
-
 export async function POST(request: NextRequest) {
 	const { hex, name, price } = await request.json();
 

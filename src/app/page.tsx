@@ -127,7 +127,7 @@ const Home = () => {
 		setMessage("");
 
 		try {
-			const response = await fetch(`/api/colors?hex=${localHex}`, {
+			const response = await fetch(`/api/colors/${localHex}`, {
 				method: "GET"
 			});
 
