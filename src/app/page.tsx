@@ -1,11 +1,13 @@
 "use client";
 
 import Header from "@/components/Header";
+import HexInputGroup from "@/components/HexInputGroup";
+import { useHexInput } from "@/context/HexInputContext";
 import useWindowWidth from "@/hooks/useWindowWidth";
 import { formatPrice } from "@/lib/format";
 import { Filter } from "bad-words";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Color = {
 	red: number;
@@ -74,14 +76,11 @@ const isValidName = (name: string) => {
 };
 
 const Home = () => {
-	const hexInputs = useRef<HTMLInputElement[]>(Array.from({ length: 6 }));
+	const { hexDigits } = useHexInput();
 
 	const [customName, setCustomName] = useState("");
 	const [hasName, setHasName] = useState(false);
 	const [hasNameBeenSelected] = useState(false);
-	const [hexDigits, setHexDigits] = useState<string[]>(
-		Array.from<string>({ length: 6 }).fill("")
-	);
 	const [isAssigningName, setIsAssigningName] = useState(false);
 	const [isRetrievingNames, setIsRetrievingNames] = useState(false);
 	const [message, setMessage] = useState("");
@@ -191,42 +190,6 @@ const Home = () => {
 		setColor(c);
 	};
 
-	const handleHexInput = (digit: string, index: number) => {
-		if (/[a-fA-F0-9]/.test(digit)) {
-			const hd = [...hexDigits];
-
-			hd[index] = digit.toUpperCase();
-
-			setHexDigits(hd);
-
-			if (index < 5) {
-				hexInputs.current[index + 1]?.focus();
-			}
-		} else if (!/[a-fA-F0-9]/.test(digit) && index < 5) {
-			hexInputs.current[index].value = "";
-		}
-	};
-
-	const handleKeyNavigation = (
-		e: React.KeyboardEvent<HTMLInputElement>,
-		index: number
-	) => {
-		if (e.key === "Backspace") {
-			e.preventDefault();
-
-			const hd = [...hexDigits];
-
-			hd[index] = "";
-
-			setHexDigits(hd);
-
-			if (index > 0) {
-				hexInputs.current[index].value = "";
-				hexInputs.current[index - 1].focus();
-			}
-		}
-	};
-
 	const handleNameSelection = async (suggestion: string) => {
 		suggestion = convertToTitleCase(suggestion);
 
@@ -254,20 +217,6 @@ const Home = () => {
 		} catch {
 		} finally {
 			setIsAssigningName(false);
-		}
-	};
-
-	const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-		const paste = e.clipboardData
-			?.getData("text")
-			.trim()
-			.replace("#", "")
-			.toUpperCase();
-
-		if (paste && /^[a-fA-F0-9]{6}$/.test(paste)) {
-			setHexDigits(paste?.split(""));
-
-			hexInputs.current[5].focus();
 		}
 	};
 
@@ -313,7 +262,11 @@ const Home = () => {
 				backgroundColor: `#${hex}`
 			}}
 		>
-			<Header color={color} />
+			<Header
+				color={color}
+				hex={hex}
+				setColor={setColor}
+			/>
 			<div
 				className="border col-span-1 hidden lg:flex flex-col gap-2 items-center justify-center p-2 row-span-4 rounded-lg"
 				style={{ borderColor: color }}
@@ -325,29 +278,10 @@ const Home = () => {
 					>
 						#
 					</div>
-					{hexDigits.map((digit, index) => (
-						<input
-							className="aspect-square flex-1 min-h-12 min-w-12 rounded-lg text-center uppercase"
-							key={index}
-							maxLength={1}
-							pattern="[0-9a-fA-F]"
-							onChange={(e) =>
-								handleHexInput(e.target.value, index)
-							}
-							onKeyDown={(e) => handleKeyNavigation(e, index)}
-							onPaste={(e) => handlePaste(e)}
-							ref={(element) => {
-								if (element) {
-									hexInputs.current[index] = element;
-								}
-							}}
-							style={{
-								backgroundColor: color,
-								color: `#${hex}`
-							}}
-							value={digit}
-						/>
-					))}
+					<HexInputGroup
+						color={color}
+						hex={hex}
+					/>
 					<button
 						aria-label="Search for a specific color"
 						className={`${
