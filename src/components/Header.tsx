@@ -15,7 +15,7 @@ const Header = ({
 }: {
 	color: string;
 	hex: string;
-	setColor: (c?: string) => Promise<void>;
+	setColor?: (c?: string) => Promise<void>;
 }) => {
 	const { hexDigits, setHexDigits } = useHexInput();
 
@@ -106,7 +106,7 @@ const Header = ({
 					className="hover:cursor-pointer flex col-span-1 items-center justify-center min-h-12 min-w-12"
 					onClick={() => {
 						const handleColorSearch = async (c: string) => {
-							setColor(c);
+							setColor?.(c);
 						};
 
 						if (isSearching && hexDigits.every((hd) => hd)) {
