@@ -6,9 +6,9 @@ export const runtime = "nodejs";
 
 export async function GET(
 	request: NextRequest,
-	context: { params: { hex: string } }
+	context: { params: Promise<{ hex: string }> }
 ) {
-	let { hex } = context.params;
+	let { hex } = await context.params;
 
 	if (!hex) {
 		return NextResponse.json({});
