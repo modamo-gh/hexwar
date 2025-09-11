@@ -5,7 +5,12 @@ import HexInputGroup from "@/components/HexInputGroup";
 import { useHexInput } from "@/context/HexInputContext";
 import useWindowWidth from "@/hooks/useWindowWidth";
 import { formatPrice } from "@/lib/format";
-import { Filter } from "bad-words";
+import {
+	filter,
+	isMoreThanThreeWords,
+	isValidName,
+	validCharacters
+} from "@/lib/validation";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -47,32 +52,10 @@ const convertToTitleCase = (name: string) => {
 		.join(" ");
 };
 
-const filter = new Filter();
-
 const getLuminance = ({ red, green, blue }: Color) => {
 	const luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255;
 
 	return luminance > 0.5 ? "black" : "white";
-};
-
-const isMoreThanThreeWords = (input: string) => {
-	const words = input.trim().split(/\s+/).filter(Boolean);
-
-	return words.length > 3;
-};
-
-const validCharacters = /^[a-zA-Z '\-]+$/;
-
-const isValidName = (name: string) => {
-	name = name.trim();
-
-	return (
-		!!name.length &&
-		validCharacters.test(name) &&
-		!isMoreThanThreeWords(name) &&
-		name.length <= 25 &&
-		!filter.isProfane(name)
-	);
 };
 
 const Home = () => {
