@@ -251,7 +251,7 @@ const Home = () => {
 				setColor={setColor}
 			/>
 			<div
-				className="border col-span-1 hidden lg:flex flex-col gap-2 items-center justify-center p-2 row-span-4 rounded-lg"
+				className="border-2 col-span-1 hidden lg:flex flex-col gap-2 items-center justify-center p-2 row-span-4 rounded-lg"
 				style={{ borderColor: color }}
 			>
 				<div className="flex flex-1 gap-2 w-full">
@@ -293,7 +293,7 @@ const Home = () => {
 				</div>
 			</div>
 			<div
-				className="border col-span-2 lg:col-span-1 flex flex-col items-center justify-around p-2 row-span-4 rounded-lg"
+				className="border-2 col-span-2 lg:col-span-1 flex flex-col items-center justify-around p-2 row-span-4 rounded-lg"
 				style={{ borderColor: color }}
 			>
 				<p

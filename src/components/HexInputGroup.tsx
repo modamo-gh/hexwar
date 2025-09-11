@@ -13,7 +13,7 @@ const HexInputGroup = ({ color, hex }: { color: string; hex: string }) => {
 		<>
 			{hexDigits.map((digit, index) => (
 				<input
-					className="aspect-square min-h-12 min-w-12 rounded-lg text-center uppercase"
+					className="col-span-2 sm:col-span-1 min-h-12 min-w-12 rounded-lg row-span-1 sm:row-span-2 text-center text-5xl uppercase"
 					key={index}
 					maxLength={1}
 					pattern="[0-9a-fA-F]"
