@@ -254,23 +254,25 @@ const Home = () => {
 				className="border-2 col-span-1 hidden lg:flex flex-col gap-2 items-center justify-center p-2 row-span-4 rounded-lg"
 				style={{ borderColor: color }}
 			>
-				<div className="flex flex-1 gap-2 w-full">
+				<div className="flex-1 gap-2 grid grid-cols-9 grid-rows-1 w-full">
 					<div
-						className="flex flex-1 items-center justify-center text-2xl"
+						className="flex col-span-1 items-center justify-center text-center text-5xl"
 						style={{ color }}
 					>
-						#
+						<p>#</p>
 					</div>
-					<HexInputGroup
-						color={color}
-						hex={hex}
-					/>
+					{width >= 1024 && (
+						<HexInputGroup
+							color={color}
+							hex={hex}
+						/>
+					)}
 					<button
 						aria-label="Search for a specific color"
 						className={`${
 							hexDigits.every((digit) => digit.length) &&
 							"cursor-pointer hover:opacity-80"
-						} flex-2 h-full min-h-12 px-2 py-1 rounded-lg`}
+						} col-span-2 h-full min-h-12 rounded-lg row-span-1`}
 						disabled={hexDigits.some((digit) => !digit.length)}
 						onClick={() => handleColorSearch(hexDigits.join(""))}
 						style={{

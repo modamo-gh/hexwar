@@ -5,8 +5,6 @@ export async function POST(request: NextRequest) {
 	try {
 		const { color, hex, name, price } = await request.json();
 
-		console.log(hex, name, price);
-
 		if (!hex || !name || typeof price !== "number" || price < 0) {
 			return NextResponse.json(
 				{ error: "Invalid payload" },

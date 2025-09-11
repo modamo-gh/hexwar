@@ -55,10 +55,12 @@ const Header = ({
 			<div className="col-span-6 lg:col-span-2 flex items-center justify-center row-span-2">
 				{isSearching ? (
 					<div className="gap-2 grid grid-cols-6 grid-rows-2 h-full">
-						<HexInputGroup
-							color={color}
-							hex={hex}
-						/>
+						{width < 1024 && (
+							<HexInputGroup
+								color={color}
+								hex={hex}
+							/>
+						)}
 					</div>
 				) : (
 					<Link href="/">
@@ -85,8 +87,6 @@ const Header = ({
 						}
 
 						setIsSearching((prev) => {
-							console.log(!prev);
-
 							return !prev;
 						});
 					}}
@@ -109,49 +109,6 @@ const Header = ({
 				</div>
 			)}
 		</header>
-		// <header
-		// 	className="  grid-cols-8 gap-2   "
-		// 	style={{ borderColor: color, color }}
-		// >
-		// 	{width >= 1024 ? (
-
-		// 	) : (
-		// 		<div
-		// 			className={`${
-		// 				!isSearching ? "col-span-1" : "hidden"
-		// 			} flex h-full items-center justify-center`}
-		// 		>
-		// 			{isSearching ? (
-		// 				<div
-		// 					className="flex flex-1 items-center justify-center text-2xl"
-		// 					style={{ color }}
-		// 				>
-		// 					#
-		// 				</div>
-		// 			) : (
-		// 				<SearchIcon
-		// 					className="invisible text-3xl sm:text-4xl"
-		// 					fill={color}
-		// 				/>
-		// 			)}
-		// 		</div>
-		// 	)}
-		// 	<div
-		// 		className={`flex ${
-		// 			!isSearching ? "col-span-6" : "col-span-7"
-		// 		} gap-2 h-full items-center justify-center text-center w-full`}
-		// 	>
-		// 		{isSearching && width < 1024 ? (
-
-		// 		) : (
-
-		// 		)}
-		// 	</div>
-		// 	{width >= 1024 ? (
-
-		// 	) : (
-
-		//
 	);
 };
 
