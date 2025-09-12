@@ -1,4 +1,7 @@
+import { prisma } from "@/lib/db";
+import { formatPrice } from "@/lib/format";
 import { stripe } from "@/lib/stripe";
+import { isValidName } from "@/lib/validation";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -12,6 +15,33 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
+		if (!/^[A-F0-9]{6}$/.test(hex.toUpperCase())) {
+			return NextResponse.json(
+				{ error: "Invalid hex format" },
+				{ status: 400 }
+			);
+		}
+
+		if (!isValidName(name)) {
+			return NextResponse.json(
+				{ error: "Invalid name" },
+				{ status: 400 }
+			);
+		}
+
+		const existingColor = await prisma.color.findUnique({
+			where: { hex: hex.toUpperCase() }
+		});
+
+		const minimumBid = (existingColor?.price || 0) + 100;
+
+		if (price < minimumBid) {
+			return NextResponse.json(
+				{ error: `Minimum bid is $${formatPrice(minimumBid)}` },
+				{ status: 400 }
+			);
+		}
+
 		const successURL = `${process.env.APP_URL}/success?session_id={CHECKOUT_SESSION_ID}`;
 		const cancelURL = `${process.env.APP_URL}/?canceled=1`;
 		const session = await stripe.checkout.sessions.create({
@@ -21,7 +51,7 @@ export async function POST(request: NextRequest) {
 					price_data: {
 						currency: "usd",
 						product_data: {
-							metadata: { hex, name },
+							metadata: { hex: hex.toUpperCase(), name },
 							name: `#${hex.toUpperCase()} — ${name}`
 						},
 						unit_amount: price
