@@ -36,7 +36,7 @@ const SuccessPage = async ({
 				backgroundColor: `#${hex}`
 			}}
 		>
-			<Header color={color} hex={hex} />
+			<Header />
 			<div
 				className="border flex flex-col flex-4 gap-4 items-center justify-center p-4 rounded-lg text-center text-2xl"
 				style={{ borderColor: color, color }}
