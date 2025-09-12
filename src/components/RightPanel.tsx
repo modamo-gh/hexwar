@@ -215,11 +215,13 @@ const RightPanel = () => {
 					className="flex-1 min-h-12 pl-2 rounded-lg text-xs sm:text-base w-full"
 					onChange={(e) => onNameChange(e.target.value)}
 					placeholder="Enter color name"
-					style={{
-						color: `#${hex}`,
-						backgroundColor: color,
-						"--placeholder-color": `#${hex}50`
-					}}
+					style={
+						{
+							color: `#${hex}`,
+							backgroundColor: color,
+							"--placeholder-color": `#${hex}50`
+						} as React.CSSProperties
+					}
 					type="text"
 					value={customName}
 				/>
@@ -238,11 +240,13 @@ const RightPanel = () => {
 					placeholder={`Min price: $${formatPrice(
 						minimumPrice + 100
 					)}`}
-					style={{
-						color: `#${hex}`,
-						backgroundColor: color,
-						"--placeholder-color": `#${hex}50`
-					}}
+					style={
+						{
+							color: `#${hex}`,
+							backgroundColor: color,
+							"--placeholder-color": `#${hex}50`
+						} as React.CSSProperties
+					}
 					value={priceInput}
 				/>
 				<button

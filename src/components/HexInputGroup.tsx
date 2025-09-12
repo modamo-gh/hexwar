@@ -32,7 +32,7 @@ const HexInputGroup = ({ color, hex }: { color: string; hex: string }) => {
 						color: `#${hex}`,
 						backgroundColor: color,
 						"--placeholder-color": `#${hex}50`
-					}}
+					} as React.CSSProperties}
 					value={digit}
 				/>
 			))}
