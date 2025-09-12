@@ -39,6 +39,7 @@ const RightPanel = () => {
 
 	useEffect(() => {
 		if (ref) {
+			console.log(ref.current?.clientHeight)
 			setHeight(ref.current?.clientHeight);
 		}
 	}, []);
@@ -81,33 +82,37 @@ const RightPanel = () => {
 		<div
 			className="border-2 col-span-2 lg:col-span-1 flex flex-col gap-2 lg:grid lg:grid-cols-1 lg:grid-rows-2 items-center p-2 row-span-1 rounded-lg"
 			ref={ref}
-			style={{ borderColor: color }}
+			style={{
+				borderColor: color
+			}}
 		>
 			{width && width < 1024 && (
 				<div
-					className="flex flex-col gap-2 items-center justify-around row-span-2 w-full"
+					className="grid grid-cols-1 grid-rows-2 gap-2 items-center justify-center row-span-2"
 					style={
 						width && width < 1024
 							? {
-									height:
+									maxHeight:
 										height && `${(height - 16 - 48) / 2}px`
 							  }
 							: undefined
 					}
 				>
-					<p
-						className="text-center lg:text-xl w-4/5"
-						style={{
-							color,
-							whiteSpace: "pre-line"
-						}}
-					>
-						{message}
-					</p>
+					<div className="flex col-span-1 items-center justify-center  row-span-1">
+						<p
+							className="text-center lg:text-xl w-4/5"
+							style={{
+								color,
+								whiteSpace: "pre-line"
+							}}
+						>
+							{message}
+						</p>
+					</div>
 					{!hasName && (
 						<>
 							{!suggestions.length ? (
-								<div className="flex gap-2 w-full">
+								<div className="col-span-1 gap-2 grid grid-cols-2 grid-rows-2 row-span-1">
 									{Array.from({ length: 3 }).map(
 										(_, index) => {
 											return (
@@ -115,6 +120,10 @@ const RightPanel = () => {
 													className={`${
 														isRetrievingNames &&
 														"animate-pulse"
+													} ${
+														index < 2
+															? "col-span-1"
+															: "col-span-2"
 													} lg:col-span-1 flex-1 h-full min-h-12 rounded-lg lg:text-2xl lg:w-4/5`}
 													key={index}
 													style={{
@@ -126,14 +135,14 @@ const RightPanel = () => {
 									)}
 								</div>
 							) : (
-								<div className="gap-2 grid grid-cols-2 grid-rows-2 w-full">
+								<div className="col-span-1 gap-2 grid grid-cols-2 grid-rows-2 row-span-1">
 									{suggestions.map((suggestion, index) => (
 										<button
 											className={`cursor-pointer ${
 												index < 2
 													? "col-span-1"
 													: "col-span-2"
-											} lg:col-span-1 min-h-12 hover:opacity-80 px-2 py-1 rounded-lg lg:text-2xl lg:w-4/5`}
+											} lg:col-span-1 min-h-12 hover:opacity-80 rounded-lg text-xs lg:text-2xl lg:w-4/5`}
 											disabled={isAssigningName}
 											key={index}
 											onClick={() =>
@@ -156,7 +165,9 @@ const RightPanel = () => {
 				</div>
 			)}
 			<div
-				className="flex flex-col gap-2 items-center lg:h-full justify-around lg:row-span-1 text-center"
+				className={`flex flex-col ${
+					isExpanded && "gap-2"
+				} items-center lg:h-full justify-center lg:row-span-1 text-center`}
 				style={{ color }}
 			>
 				<div className="flex gap-2 items-center">
@@ -185,9 +196,9 @@ const RightPanel = () => {
 				<ul
 					className={`flex-1 gap-2 grid ${
 						(width && width >= 1024) || isExpanded
-							? "visible"
-							: "hidden"
-					} grid-cols-5 pl-4`}
+							? "max-h-96 opacity-100"
+							: "max-h-0 opacity-0"
+					} grid-cols-5 pl-4 transition-all duration-300 ease-in-out overflow-hidden`}
 				>
 					<li className="contents">
 						<span className="col-span-4 text-left">

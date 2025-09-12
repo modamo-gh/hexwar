@@ -36,9 +36,8 @@ const Home = () => {
 			<div
 				className="flex-1 gap-4 grid grid-cols-2 grid-rows-1 w-full"
 				style={{
-				
-				height: height ? `${0.8 * (height - 16)}px` : "auto"
-			}}
+					height: height ? `${0.8 * (height - 16)}px` : "auto"
+				}}
 			>
 				<LeftPanel />
 				<RightPanel />
