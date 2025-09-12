@@ -7,16 +7,10 @@ import { useEffect, useState } from "react";
 import SearchIcon from "./SearchIcon";
 import HexInputGroup from "./HexInputGroup";
 import { useHexInput } from "@/context/HexInputContext";
+import { useColor } from "@/context/ColorContext";
 
-const Header = ({
-	color,
-	hex,
-	setColor
-}: {
-	color: string;
-	hex: string;
-	setColor?: (c?: string) => Promise<void>;
-}) => {
+const Header = () => {
+	const { color, hex, setColor } = useColor();
 	const { hexDigits, setHexDigits } = useHexInput();
 
 	const [count, setCount] = useState<null | number>(null);
