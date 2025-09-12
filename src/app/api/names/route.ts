@@ -8,30 +8,36 @@ export async function POST(request: NextRequest) {
 	try {
 		const { hex } = await request.json();
 
-		const prompt =
-			`Give THREE distinct color names for ${hex}.\n` +
-			`Rules: max 3 words each; only letters, hyphen, apostrophe; no numbers, brands, or emojis.\n` +
-			`Return ONLY the three names, one per line.`;
+		if (!hex) {
+			return NextResponse.json({});
+		}
 
-		const response = await deepseek.chat.completions.create({
-			model: "deepseek-chat",
-			messages: [{ role: "user", content: prompt }],
-			max_tokens: 50,
-			temperature: 0.7
-		});
+		if (/^[A-F0-9]{6}$/i.test(hex)) {
+			const prompt =
+				`Give THREE distinct color names for ${hex}.\n` +
+				`Rules: max 3 words each; only letters, hyphen, apostrophe; no numbers, brands, or emojis.\n` +
+				`Return ONLY the three names, one per line.`;
 
-		const content = response.choices?.[0]?.message?.content ?? "";
+			const response = await deepseek.chat.completions.create({
+				model: "deepseek-chat",
+				messages: [{ role: "user", content: prompt }],
+				max_tokens: 50,
+				temperature: 0.7
+			});
 
-		const suggestions = Array.from(
-			new Set(
-				content
-					?.split("\n")
-					.map((s) => s.trim())
-					.filter(Boolean)
-			)
-		);
+			const content = response.choices?.[0]?.message?.content ?? "";
 
-		return NextResponse.json({ hex, suggestions });
+			const suggestions = Array.from(
+				new Set(
+					content
+						?.split("\n")
+						.map((s) => s.trim())
+						.filter(Boolean)
+				)
+			);
+
+			return NextResponse.json({ hex, suggestions });
+		}
 	} catch (error) {
 		console.error("DeepSeek error:", error);
 

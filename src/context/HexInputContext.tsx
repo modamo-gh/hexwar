@@ -48,10 +48,6 @@ export const HexInputProvider: React.FC<{ children: ReactNode }> = ({
 		} else if (!/[a-fA-F0-9]/.test(digit) && index < 5) {
 			hexInputs.current[index].value = "";
 		}
-
-		console.log(
-			hexInputs.current.map((n, i) => [i, n?.outerHTML?.slice(0, 80)])
-		);
 	};
 
 	const handleKeyNavigation = (
