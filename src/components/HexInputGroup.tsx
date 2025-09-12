@@ -9,8 +9,6 @@ const HexInputGroup = ({ color, hex }: { color: string; hex: string }) => {
 		hexInputs
 	} = useHexInput();
 
-	console.log("rendering group", location)
-
 	return (
 		<>
 			{hexDigits.map((digit, index) => (
@@ -19,6 +17,9 @@ const HexInputGroup = ({ color, hex }: { color: string; hex: string }) => {
 					key={index}
 					maxLength={1}
 					pattern="[0-9a-fA-F]"
+					placeholder={
+						hexDigits.every((hd) => hd === "") ? hex[index] : ""
+					}
 					onChange={(e) => handleHexInput(e.target.value, index)}
 					onKeyDown={(e) => handleKeyNavigation(e, index)}
 					onPaste={(e) => handlePaste(e)}
@@ -28,8 +29,9 @@ const HexInputGroup = ({ color, hex }: { color: string; hex: string }) => {
 						}
 					}}
 					style={{
+						color: `#${hex}`,
 						backgroundColor: color,
-						color: `#${hex}`
+						"--placeholder-color": `#${hex}50`
 					}}
 					value={digit}
 				/>

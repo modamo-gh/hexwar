@@ -59,7 +59,7 @@ const getLuminance = ({ red, green, blue }: Color) => {
 };
 
 const Home = () => {
-	const { hexDigits } = useHexInput();
+	const { hexDigits, setHexDigits } = useHexInput();
 
 	const [customName, setCustomName] = useState("");
 	const [hasName, setHasName] = useState(false);
@@ -120,8 +120,8 @@ const Home = () => {
 			if (!data.name) {
 				setMessage(
 					`${
-						width >= 1024 ? "This color" : `#${localHex}`
-					} hasn't been named yet! Here are some suggestions:`
+						width && width >= 1024 ? "This color" : `#${localHex}`
+					} hasn't been named yet!\nHere are some suggestions:`
 				);
 
 				setIsRetrievingNames(true);
@@ -164,13 +164,15 @@ const Home = () => {
 	useEffect(() => {
 		setMessage(
 			`${
-				width >= 1024 ? "This color" : `#${hex}`
-			} hasn't been named yet! Here are some suggestions:`
+				width && width >= 1024 ? "This color" : `#${hex}`
+			} hasn't been named yet!\nHere are some suggestions:`
 		);
 	}, [hex, width]);
 
 	const handleColorSearch = async (c: string) => {
 		setColor(c);
+
+		setHexDigits(Array.from<string>({ length: 6 }).fill(""));
 	};
 
 	const handleNameSelection = async (suggestion: string) => {
@@ -251,17 +253,17 @@ const Home = () => {
 				setColor={setColor}
 			/>
 			<div
-				className="border-2 col-span-1 hidden lg:flex flex-col gap-2 items-center justify-center p-2 row-span-4 rounded-lg"
+				className="border-2 col-span-1 gap-2 lg:grid grid-cols-1 grid-rows-5 hidden p-2 place-items-center row-span-4 rounded-lg"
 				style={{ borderColor: color }}
 			>
-				<div className="flex-1 gap-2 grid grid-cols-9 grid-rows-1 w-full">
+				<div className="col-span-1 gap-2 grid grid-cols-9 grid-rows-1 h-full row-span-1">
 					<div
 						className="flex col-span-1 items-center justify-center text-center text-5xl"
 						style={{ color }}
 					>
 						<p>#</p>
 					</div>
-					{width >= 1024 && (
+					{width && width >= 1024 && (
 						<HexInputGroup
 							color={color}
 							hex={hex}
@@ -283,117 +285,102 @@ const Home = () => {
 						Search
 					</button>
 				</div>
-				<div className="flex flex-4 items-center justify-center w-full">
-					<p
-						className="text-5xl"
-						style={{
-							color
-						}}
-					>
-						#{hex ?? "000000"}
-					</p>
-				</div>
-			</div>
-			<div
-				className="border-2 col-span-2 lg:col-span-1 flex flex-col items-center justify-around p-2 row-span-4 rounded-lg"
-				style={{ borderColor: color }}
-			>
 				<p
 					className="text-center text-xl w-4/5"
 					style={{
-						color
+						color,
+						whiteSpace: "pre-line"
 					}}
 				>
 					{message}
 				</p>
 				{!hasName && (
 					<>
-						<div className="flex gap-2 h-12 w-full">
-							{!suggestions.length ? (
-								Array.from({ length: 3 }).map((_, index) => {
-									return (
-										<div
-											className={`${
-												isRetrievingNames &&
-												"animate-pulse"
-											} flex-1 h-full rounded-lg`}
-											key={index}
-											style={{
-												backgroundColor: color
-											}}
-										/>
-									);
-								})
-							) : (
-								<div className="gap-2 grid grid-cols-3 w-full">
-									{suggestions.map((suggestion, index) => (
-										<button
-											className="cursor-pointer col-span-1 h-full min-h-12 hover:opacity-80 rounded-lg text-xs"
-											disabled={isAssigningName}
-											key={index}
-											onClick={() =>
-												handleSubmissionSelection(
-													suggestion
-												)
-											}
-											style={{
-												backgroundColor: color,
-												color: `#${hex}`
-											}}
-										>
-											{suggestion}
-										</button>
-									))}
-								</div>
-							)}
-						</div>
+						{!suggestions.length ? (
+							Array.from({ length: 3 }).map((_, index) => {
+								return (
+									<div
+										className={`${
+											isRetrievingNames && "animate-pulse"
+										} col-span-1 h-full rounded-lg row-span-1 w-4/5`}
+										key={index}
+										style={{
+											backgroundColor: color
+										}}
+									/>
+								);
+							})
+						) : (
+							<>
+								{suggestions.map((suggestion, index) => (
+									<button
+										className="cursor-pointer col-span-1 h-full min-h-12 hover:opacity-80 rounded-lg text-2xl w-4/5"
+										disabled={isAssigningName}
+										key={index}
+										onClick={() =>
+											handleSubmissionSelection(
+												suggestion
+											)
+										}
+										style={{
+											backgroundColor: color,
+											color: `#${hex}`
+										}}
+									>
+										{suggestion}
+									</button>
+								))}
+							</>
+						)}
 					</>
 				)}
+			</div>
+			<div
+				className="border-2 col-span-2 lg:col-span-1 grid grid-cols-1 grid-rows-2 items-center justify-around p-2 row-span-4 rounded-lg"
+				style={{ borderColor: color }}
+			>
 				{!hasNameBeenSelected && (
 					<>
-						<p style={{ color }}>- OR -</p>
-						<div className="flex gap-2 items-center justify-center w-full">
-							<div className="flex flex-col flex-1 gap-2 ">
-								<input
-									aria-label="Custom color name"
-									className="min-h-12 pl-2 rounded-lg text-xs sm:text-base w-full"
-									onChange={(e) =>
-										onNameChange(e.target.value)
-									}
-									placeholder="Enter color name"
-									style={{
-										backgroundColor: color,
-										color: `#${hex}`
-									}}
-									type="text"
-									value={customName}
-								/>
-								<input
-									aria-label="Your bid in dollars"
-									className="min-h-12 pl-2 rounded-lg text-xs sm:text-base w-full"
-									inputMode="decimal"
-									onChange={(e) => {
-										const v = e.target.value;
+						<div className="flex flex-col gap-2 h-full items-center justify-around row-span-1 w-full">
+							<input
+								aria-label="Custom color name"
+								className="flex-1 min-h-12 pl-2 rounded-lg text-xs sm:text-base w-full"
+								onChange={(e) => onNameChange(e.target.value)}
+								placeholder="Enter color name"
+								style={{
+									color: `#${hex}`,
+									backgroundColor: color,
+									"--placeholder-color": `#${hex}50`
+								}}
+								type="text"
+								value={customName}
+							/>
+							<input
+								aria-label="Your bid in dollars"
+								className="flex-1 min-h-12 pl-2 rounded-lg text-xs sm:text-base w-full"
+								inputMode="decimal"
+								onChange={(e) => {
+									const v = e.target.value;
 
-										const cleaned = Number(
-											v.replace(/\D/g, "")
-										);
+									const cleaned = Number(
+										v.replace(/\D/g, "")
+									);
 
-										setPrice(cleaned);
-										setPriceInput(
-											cleaned ? formatPrice(cleaned) : ""
-										);
-									}}
-									placeholder={`Min price: $${formatPrice(
-										minimumPrice + 100
-									)}`}
-									style={{
-										backgroundColor: color,
-										color: `#${hex}`
-									}}
-									value={priceInput}
-								/>
-							</div>
+									setPrice(cleaned);
+									setPriceInput(
+										cleaned ? formatPrice(cleaned) : ""
+									);
+								}}
+								placeholder={`Min price: $${formatPrice(
+									minimumPrice + 100
+								)}`}
+								style={{
+									color: `#${hex}`,
+									backgroundColor: color,
+									"--placeholder-color": `#${hex}50`
+								}}
+								value={priceInput}
+							/>
 							<button
 								aria-label="Submit your color name and bid"
 								className={`${
@@ -401,7 +388,7 @@ const Home = () => {
 									!isAssigningName &&
 									price >= minimumPrice + 100 &&
 									"cursor-pointer hover:opacity-80"
-								} h-full min-h-12 px-2 py-1 rounded-lg`}
+								} flex-1 min-h-12 px-2 py-1 rounded-lg w-3/5`}
 								disabled={
 									!isValidName(customName) ||
 									isAssigningName ||
@@ -417,11 +404,11 @@ const Home = () => {
 							</button>
 						</div>
 						<div
-							className="flex flex-col items-center text-center"
+							className="flex flex-col gap-2 h-full items-center justify-around pt-2 row-span-1 text-center"
 							style={{ color }}
 						>
 							<p>CUSTOM NAME RULES</p>
-							<ul className="gap-2 grid grid-cols-5 pl-4">
+							<ul className="flex-1 gap-2 grid grid-cols-5 pl-4">
 								<li className="contents">
 									<span className="col-span-4 text-left">
 										Max three words
