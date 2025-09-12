@@ -1,5 +1,5 @@
 import { useColor } from "@/context/ColorContext";
-import useWindowWidth from "@/hooks/useWindowWidth";
+import useWindowDimensions from "@/hooks/useWindowDimensions";
 import { convertToTitleCase, formatPrice } from "@/lib/format";
 import {
 	filter,
@@ -7,7 +7,7 @@ import {
 	isValidName,
 	validCharacters
 } from "@/lib/validation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DownArrow from "./icons/DownArrow";
 import UpArrow from "./icons/UpArrow";
 
@@ -28,11 +28,20 @@ const RightPanel = () => {
 		suggestions
 	} = useColor();
 
+	const ref = useRef<HTMLDivElement | null>(null);
+
 	const [customName, setCustomName] = useState("");
+	const [height, setHeight] = useState<number | undefined>(undefined);
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [priceInput, setPriceInput] = useState("");
 
-	const width = useWindowWidth();
+	const { width } = useWindowDimensions();
+
+	useEffect(() => {
+		if (ref) {
+			setHeight(ref.current?.clientHeight);
+		}
+	}, []);
 
 	const handleNameSelection = async (suggestion: string) => {
 		suggestion = convertToTitleCase(suggestion);
@@ -70,11 +79,22 @@ const RightPanel = () => {
 
 	return (
 		<div
-			className="border-2 col-span-2 lg:col-span-1 flex flex-col gap-2 lg:grid lg:grid-cols-1 lg:grid-rows-2 items-center justify-around p-2 row-span-4 rounded-lg"
+			className="border-2 col-span-2 lg:col-span-1 flex flex-col gap-2 lg:grid lg:grid-cols-1 lg:grid-rows-2 items-center p-2 row-span-1 rounded-lg"
+			ref={ref}
 			style={{ borderColor: color }}
 		>
 			{width && width < 1024 && (
-				<div className="flex flex-col gap-2 items-center justify-center row-span-2 w-full">
+				<div
+					className="flex flex-col gap-2 items-center justify-around row-span-2 w-full"
+					style={
+						width && width < 1024
+							? {
+									height:
+										height && `${(height - 16 - 48) / 2}px`
+							  }
+							: undefined
+					}
+				>
 					<p
 						className="text-center lg:text-xl w-4/5"
 						style={{
@@ -208,7 +228,14 @@ const RightPanel = () => {
 				</ul>
 			</div>
 			<div
-				className={`flex flex-col flex-1 gap-2 lg:h-full items-center justify-around lg:row-span-1 w-full`}
+				className={`flex flex-col gap-2 lg:h-full items-center justify-around lg:row-span-1 w-full`}
+				style={
+					width && width < 1024
+						? {
+								height: height && `${(height - 16 - 48) / 2}px`
+						  }
+						: undefined
+				}
 			>
 				<input
 					aria-label="Custom color name"

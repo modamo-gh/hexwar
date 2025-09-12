@@ -1,6 +1,6 @@
 import { useColor } from "@/context/ColorContext";
 import { useHexInput } from "@/context/HexInputContext";
-import useWindowWidth from "@/hooks/useWindowWidth";
+import useWindowDimensions from "@/hooks/useWindowDimensions";
 import HexInputGroup from "./HexInputGroup";
 
 const LeftPanel = () => {
@@ -18,7 +18,7 @@ const LeftPanel = () => {
 
 	const { hexDigits, setHexDigits } = useHexInput();
 
-	const width = useWindowWidth();
+	const {width} = useWindowDimensions();
 
 	const handleColorSearch = async (c: string) => {
 		setColor(c);
@@ -28,7 +28,7 @@ const LeftPanel = () => {
 
 	return (
 		<div
-			className="border-2 col-span-1 gap-2 lg:grid grid-cols-1 grid-rows-5 hidden p-2 place-items-center row-span-4 rounded-lg"
+			className="border-2 col-span-1 gap-2 lg:grid grid-cols-1 grid-rows-5 hidden p-2 place-items-center row-span-1 rounded-lg"
 			style={{ borderColor: color }}
 		>
 			<div className="col-span-1 gap-2 grid grid-cols-9 grid-rows-1 h-full row-span-1">

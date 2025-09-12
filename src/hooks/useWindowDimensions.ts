@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-const useWindowWidth = () => {
+const useWindowDimensions = () => {
+	const [height, setHeight] = useState<number | undefined>(undefined);
 	const [width, setWidth] = useState<number | undefined>(undefined);
 
 	useEffect(() => {
 		const onResize = () => {
+			setHeight(window.innerHeight);
 			setWidth(window.innerWidth);
 		};
 
@@ -17,7 +19,7 @@ const useWindowWidth = () => {
 		return () => window.removeEventListener("resize", onResize);
 	}, []);
 
-	return width;
+	return { height, width };
 };
 
-export default useWindowWidth;
+export default useWindowDimensions;

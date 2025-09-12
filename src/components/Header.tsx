@@ -1,13 +1,13 @@
 "use client";
 
-import useWindowWidth from "@/hooks/useWindowWidth";
+import { useColor } from "@/context/ColorContext";
+import { useHexInput } from "@/context/HexInputContext";
+import useWindowDimensions from "@/hooks/useWindowDimensions";
 import { formatPrice } from "@/lib/format";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import SearchIcon from "./icons/Search";
 import HexInputGroup from "./HexInputGroup";
-import { useHexInput } from "@/context/HexInputContext";
-import { useColor } from "@/context/ColorContext";
+import SearchIcon from "./icons/Search";
 
 const Header = () => {
 	const { color, hex, setColor } = useColor();
@@ -21,7 +21,7 @@ const Header = () => {
 	} | null>(null);
 	const [isSearching, setIsSearching] = useState(false);
 
-	const width = useWindowWidth();
+	const { height, width } = useWindowDimensions();
 
 	useEffect(() => {
 		const getStats = async () => {
@@ -37,8 +37,12 @@ const Header = () => {
 
 	return (
 		<header
-			className="border-2 col-span-2 grid grid-cols-7 lg:grid-cols-6 grid-rows-2 p-2 rounded-lg row-span-1"
-			style={{ borderColor: color, color }}
+			className="border-2 col-span-2 grid grid-cols-7 lg:grid-cols-6 grid-rows-2 p-2 rounded-lg"
+			style={{
+				borderColor: color,
+				color,
+				height: height ? `${0.2 * (height - 16)}px` : "auto"
+			}}
 		>
 			{width && width >= 1024 && (
 				<div className="col-span-2 flex flex-col gap-2 items-center justify-center row-span-2 text-center">

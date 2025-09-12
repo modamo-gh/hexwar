@@ -1,6 +1,6 @@
 "use client";
 
-import useWindowWidth from "@/hooks/useWindowWidth";
+import useWindowDimensions from "@/hooks/useWindowDimensions";
 import { convertToTitleCase } from "@/lib/format";
 import { useRouter } from "next/navigation";
 import {
@@ -54,7 +54,7 @@ export const ColorProvider: React.FC<{ children: ReactNode }> = ({
 	});
 	const [suggestions, setSuggestions] = useState<string[]>([]);
 
-	const width = useWindowWidth();
+	const { width } = useWindowDimensions();
 
 	const convertHexToRGB = (hex: string) => {
 		const color: Color = { red: 0, green: 0, blue: 0 };

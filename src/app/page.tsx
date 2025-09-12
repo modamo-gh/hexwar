@@ -4,13 +4,13 @@ import Header from "@/components/Header";
 import LeftPanel from "@/components/LeftPanel";
 import RightPanel from "@/components/RightPanel";
 import { useColor } from "@/context/ColorContext";
-import useWindowWidth from "@/hooks/useWindowWidth";
+import useWindowDimensions from "@/hooks/useWindowDimensions";
 import { useEffect } from "react";
 
 const Home = () => {
 	const { hex, setColor, setMessage } = useColor();
 
-	const width = useWindowWidth();
+	const { height, width } = useWindowDimensions();
 
 	useEffect(() => {
 		setColor();
@@ -27,14 +27,22 @@ const Home = () => {
 
 	return (
 		<div
-			className={`gap-2 grid grid-cols-2 grid-rows-5 min-h-dvh w-screen p-4`}
+			className={`flex flex-col gap-4 min-h-dvh w-screen p-4`}
 			style={{
 				backgroundColor: `#${hex}`
 			}}
 		>
 			<Header />
-			<LeftPanel />
-			<RightPanel />
+			<div
+				className="flex-1 gap-4 grid grid-cols-2 grid-rows-1 w-full"
+				style={{
+				
+				height: height ? `${0.8 * (height - 16)}px` : "auto"
+			}}
+			>
+				<LeftPanel />
+				<RightPanel />
+			</div>
 		</div>
 	);
 };
