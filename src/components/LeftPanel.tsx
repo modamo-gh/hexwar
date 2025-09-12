@@ -1,26 +1,22 @@
+import { useColor } from "@/context/ColorContext";
 import { useHexInput } from "@/context/HexInputContext";
 import useWindowWidth from "@/hooks/useWindowWidth";
-import { useRouter } from "next/navigation";
 import HexInputGroup from "./HexInputGroup";
-import { convertToTitleCase } from "@/lib/format";
-import { useColor } from "@/context/ColorContext";
 
 const LeftPanel = () => {
 	const {
 		color,
+		handleSubmissionSelection,
 		hasName,
 		hex,
 		isAssigningName,
 		isRetrievingNames,
 		message,
 		setColor,
-		setIsAssigningName,
 		suggestions
 	} = useColor();
 
 	const { hexDigits, setHexDigits } = useHexInput();
-
-	const router = useRouter();
 
 	const width = useWindowWidth();
 
@@ -28,35 +24,6 @@ const LeftPanel = () => {
 		setColor(c);
 
 		setHexDigits(Array.from<string>({ length: 6 }).fill(""));
-	};
-
-	const handleSubmissionSelection = async (suggestion: string) => {
-		suggestion = convertToTitleCase(suggestion);
-
-		setIsAssigningName(true);
-
-		try {
-			const response = await fetch("/api/colors", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					hex,
-					name: suggestion,
-					price: 0
-				})
-			});
-
-			if (response.ok) {
-				router.push(
-					`/success?color=${color}&hex=${hex}&name=${encodeURIComponent(
-						suggestion
-					)}`
-				);
-			}
-		} catch {
-		} finally {
-			setIsAssigningName(false);
-		}
 	};
 
 	return (

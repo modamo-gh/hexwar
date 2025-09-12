@@ -4,7 +4,7 @@ import useWindowWidth from "@/hooks/useWindowWidth";
 import { formatPrice } from "@/lib/format";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import SearchIcon from "./SearchIcon";
+import SearchIcon from "./icons/Search";
 import HexInputGroup from "./HexInputGroup";
 import { useHexInput } from "@/context/HexInputContext";
 import { useColor } from "@/context/ColorContext";

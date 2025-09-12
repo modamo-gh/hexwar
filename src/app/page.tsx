@@ -21,7 +21,7 @@ const Home = () => {
 		setMessage(
 			`${
 				width && width >= 1024 ? "This color" : `#${hex}`
-			} hasn't been named yet!\nHere are some suggestions:`
+			} hasn't been named yet!\nThese names are freebies:`
 		);
 	}, [hex, width]);
 

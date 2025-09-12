@@ -1,6 +1,8 @@
 "use client";
 
 import useWindowWidth from "@/hooks/useWindowWidth";
+import { convertToTitleCase } from "@/lib/format";
+import { useRouter } from "next/navigation";
 import {
 	createContext,
 	Dispatch,
@@ -13,6 +15,7 @@ import {
 
 type ColorContextType = {
 	color: string;
+	handleSubmissionSelection: (suggestion: string) => Promise<void>;
 	hasName: boolean;
 	hex: string;
 	isAssigningName: boolean;
@@ -89,6 +92,37 @@ export const ColorProvider: React.FC<{ children: ReactNode }> = ({
 		return convertRGBToHex(rgb);
 	}, [rgb]);
 
+	const router = useRouter();
+
+	const handleSubmissionSelection = async (suggestion: string) => {
+		suggestion = convertToTitleCase(suggestion);
+
+		setIsAssigningName(true);
+
+		try {
+			const response = await fetch("/api/colors", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					hex,
+					name: suggestion,
+					price: 0
+				})
+			});
+
+			if (response.ok) {
+				router.push(
+					`/success?color=${color}&hex=${hex}&name=${encodeURIComponent(
+						suggestion
+					)}`
+				);
+			}
+		} catch {
+		} finally {
+			setIsAssigningName(false);
+		}
+	};
+
 	const setColor = async (c?: string) => {
 		let localHex;
 
@@ -124,7 +158,7 @@ export const ColorProvider: React.FC<{ children: ReactNode }> = ({
 				setMessage(
 					`${
 						width && width >= 1024 ? "This color" : `#${localHex}`
-					} hasn't been named yet!\nHere are some suggestions:`
+					} hasn't been named yet!\nThese names are freebies:`
 				);
 
 				setIsRetrievingNames(true);
@@ -161,6 +195,7 @@ export const ColorProvider: React.FC<{ children: ReactNode }> = ({
 
 	const value: ColorContextType = {
 		color,
+		handleSubmissionSelection,
 		hasName,
 		hex,
 		isAssigningName,
